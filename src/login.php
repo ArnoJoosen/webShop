@@ -35,7 +35,7 @@
                     <i class="fas fa-user"></i>
                 </a>
                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="accountDropdown">
-                    <a class="dropdown-item" href="./login.php">Login</a>
+                    <a class="dropdown-item" href="#">Login</a>
                     <a class="dropdown-item" href="#">Register</a>
                 </div>
             </li>
