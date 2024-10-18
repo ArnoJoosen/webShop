@@ -1,0 +1,54 @@
+html,
+body {
+    height: 100%;
+}
+body {
+    display: flex;
+    flex-direction: column;
+}
+.content {
+    flex: 1 0 auto;
+}
+.footer {
+    flex-shrink: 0;
+}
+
+.navbar .container-fluid {
+    justify-content: space-between;
+}
+.theme-toggle {
+    order: 1;
+    margin-left: 10px;
+}
+@media (max-width: 991px) {
+    .navbar-collapse {
+        order: 2;
+    }
+}
+
+.theme-toggle {
+    margin-left: 10px;
+}
+.theme-toggle .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+.theme-toggle .btn i {
+    font-size: 1rem;
+}
+[data-bs-theme="light"] .theme-toggle .btn {
+    border-color: #000;
+}
+[data-bs-theme="light"] .theme-toggle .btn:hover {
+    background-color: #000;
+    color: #fff;
+}
+[data-bs-theme="dark"] .theme-toggle .btn {
+    color: #fff;
+    border-color: #fff;
+}
+[data-bs-theme="dark"] .theme-toggle .btn:hover {
+    color: #000;
+    background-color: #fff;
+}

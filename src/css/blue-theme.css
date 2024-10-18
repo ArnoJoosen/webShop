@@ -1,0 +1,32 @@
+/* Component-specific overrides */
+[data-bs-theme="blue-theme"] {
+  --bs-navbar-color: #e3f2fd;
+  --bs-navbar-hover-color: #ffffff;
+  --bs-navbar-active-color: #ffffff;
+
+  --bs-btn-color: #ffffff;
+  --bs-btn-bg: #1565c0;
+  --bs-btn-border-color: #1565c0;
+  --bs-btn-hover-bg: #0d47a1;
+  --bs-btn-hover-border-color: #0d47a1;
+
+  --bs-card-bg: #1976d2;
+  --bs-card-color: #ffffff;
+
+  --bs-link-color: #4fc3f7;
+  --bs-link-hover-color: #81d4fa;
+}
+
+
+[data-bs-theme="blue-theme"] {
+  --bs-body-color: #f0f8ff;
+  --bs-body-bg: #0d47a1;
+  --bs-primary: #4fc3f7;
+  --bs-secondary: #90caf9;
+  --bs-success: #00e676;
+  --bs-info: #00b0ff;
+  --bs-warning: #ffd54f;
+  --bs-danger: #ff1744;
+  --bs-light: #e3f2fd;
+  --bs-dark: #01579b;
+}
