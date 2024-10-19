@@ -5,20 +5,15 @@ function applyTheme() {
 
   if (savedTheme) {
     html.setAttribute("data-bs-theme", savedTheme);
-    if (savedTheme === "dark") {
-      themeIcon.classList.remove("fa-moon", "text-dark");
-      themeIcon.classList.add("fa-sun");
-    } else {
-      themeIcon.classList.remove("fa-sun");
-      themeIcon.classList.add("fa-moon", "text-dark");
-    }
+    themeIcon.classList.toggle("fa-moon", savedTheme === "dark");
+    themeIcon.classList.toggle("fa-sun", savedTheme !== "dark");
   }
 }
 
 // Call applyTheme when the page loads
 document.addEventListener("DOMContentLoaded", applyTheme);
 
-document.addEventListener("DOMContentLoaded", (event) => {
+document.addEventListener("DOMContentLoaded", () => {
   const themeToggle = document.getElementById("themeToggle");
   const themeIcon = themeToggle.querySelector("i");
   const html = document.documentElement;
@@ -27,22 +22,13 @@ document.addEventListener("DOMContentLoaded", (event) => {
   const setTheme = (theme) => {
     html.setAttribute("data-bs-theme", theme);
     localStorage.setItem("theme", theme);
-    if (theme === "dark") {
-      themeIcon.classList.remove("fa-moon", "text-dark");
-      themeIcon.classList.add("fa-sun");
-    } else {
-      themeIcon.classList.remove("fa-sun");
-      themeIcon.classList.add("fa-moon", "text-dark");
-    }
+    themeIcon.classList.toggle("fa-moon", theme === "dark");
+    themeIcon.classList.toggle("fa-sun", theme !== "dark");
   };
 
   // Check local storage for saved theme
   const savedTheme = localStorage.getItem("theme");
-  if (savedTheme) {
-    setTheme(savedTheme);
-  } else {
-    setTheme("light"); // Default theme
-  }
+  setTheme(savedTheme || "light"); // Default theme
 
   themeToggle.addEventListener("click", () => {
     const currentTheme = html.getAttribute("data-bs-theme");

@@ -1,3 +1,4 @@
+<?php include "cards.php"; ?>
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
 <head>
@@ -12,7 +13,7 @@
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light">
-        <div class="container-fluid">
+        <div class="container">
             <a class="navbar-brand" href="/">Webshop</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -42,15 +43,24 @@
         </div>
     </nav>
     <!-- Main content -->
-    <div class="container mt-5">
-        <div class="p-5 mb-4 rounded-3">
-            <div class="container-fluid py-5">
-                <h1 class="display-4">Welcome to Our Webshop!</h1>
-                <script src="scripts.js"></script>
-                <p class="lead">We offer a wide variety of products to suit your needs.</p>
-                <hr class="my-4">
-                <p>Browse our collection and find what you need.</p>
-                <a class="btn btn-primary btn-lg" href="#" role="button">Shop Now</a>
+    <div class="container mt-4">
+        <div class="content-wrapper">
+            <h1 class="display-4">Welcome to Our Webshop!</h1>
+            <hr>
+            <p>Browse our collection and find what you need.</p>
+            <div class="d-flex flex-wrap justify-content-center gap-4">
+                <?php
+                // TODO change the category to sql query to get the category from the database
+                renderCategoryCard("Computers", 100);
+                renderCategoryCard("Smartphones", 200);
+                renderCategoryCard("Tablets", 400);
+                renderCategoryCard("Accessories", 1000);
+                renderCategoryCard("Software", 999);
+                renderCategoryCard("Printers", 500);
+                renderCategoryCard("Monitors", 10);
+                renderCategoryCard("Storage", 25);
+                renderCategoryCard("Networking", 80);
+                ?>
             </div>
         </div>
     </div>
