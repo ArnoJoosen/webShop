@@ -1,5 +1,10 @@
+CREATE USER 'webuser'@'%' IDENTIFIED BY 'webpassword';
+GRANT SELECT, INSERT, UPDATE, DELETE ON webshop.* TO 'webuser'@'%';
+FLUSH PRIVILEGES;
+
 USE webshop;
 
+/* Drop all tables in webshop databace */
 DROP TABLE IF EXISTS ShoppingCart;
 DROP TABLE IF EXISTS Order_Product;
 DROP TABLE IF EXISTS Orders;
@@ -10,6 +15,7 @@ DROP TABLE IF EXISTS Category;
 DROP TABLE IF EXISTS Address;
 DROP TABLE IF EXISTS Customer;
 
+/* Create tables */
 CREATE TABLE Customer (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100),
@@ -96,6 +102,10 @@ INSERT INTO Category (name, imagePath) VALUES ('Clothing', 'clothing.jpg');
 INSERT INTO Category (name, imagePath) VALUES ('Books', 'books.jpg');
 INSERT INTO Category (name, imagePath) VALUES ('Home & Garden', 'home.jpg');
 INSERT INTO Category (name, imagePath) VALUES ('Toys', 'toys.jpg');
+INSERT INTO Category (name, imagePath) VALUES ('Sports & Outdoors', 'sports.jpg');
+INSERT INTO Category (name, imagePath) VALUES ('Health & Beauty', 'health.jpg');
+INSERT INTO Category (name, imagePath) VALUES ('Automotive', 'automotive.jpg');
+
 
 /* Inserting data sub category */
 INSERT INTO Category (name, imagePath) VALUES ('Laptops', 'laptops.jpg');

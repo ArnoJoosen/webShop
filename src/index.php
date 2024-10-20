@@ -50,18 +50,31 @@
             <p>Browse our collection and find what you need.</p>
             <div class="d-flex flex-wrap justify-content-center gap-4">
                 <?php
-                // TODO change the category to sql query to get the category from the database
-                renderCategoryCard("Computers", 100);
-                renderCategoryCard("Smartphones", 200);
-                renderCategoryCard("Tablets", 400);
-                renderCategoryCard("Accessories", 1000);
-                renderCategoryCard("Software", 999);
-                renderCategoryCard("Printers", 500);
-                renderCategoryCard("Monitors", 10);
-                renderCategoryCard("Storage", 25);
-                renderCategoryCard("Networking", 80);
-                renderCategoryCard("Peripherals", 50);
-                renderCategoryCard("Gaming", 300);
+                    $servername = "db";
+                    $username = "webuser"; // TOD change to env variable (security risk)
+                    $password = "webpassword"; // TOD change to env variable (security risk)
+                    $database = "webshop";
+
+                    // Create connection
+                    $conn = new mysqli($servername, $username, $password, $database);
+
+                    // Check connection
+                    if ($conn->connect_error) {
+                        die("Connection failed: " . $conn->connect_error); // TODO: remove (security risk)
+                    }
+
+                    $sql = "SELECT * FROM Category WHERE id NOT IN (SELECT sub_category_id FROM Categorys)";
+                    $result = $conn->query($sql);
+
+                    if ($result->num_rows > 0) {
+                        while($row = $result->fetch_assoc()) {
+                            renderCategoryCard($row["name"], $row["id"]);
+                        }
+                    } else {
+                        echo "No categories found.";
+                    }
+
+                    $conn->close();
                 ?>
             </div>
         </div>
