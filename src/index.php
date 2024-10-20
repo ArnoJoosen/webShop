@@ -45,7 +45,7 @@
     <!-- Main content -->
     <div class="container mt-4">
         <div class="content-wrapper">
-            <h1 class="display-4">Welcome to Our Webshop!</h1>
+            <h1>Welcome to Our Webshop!</h1>
             <hr>
             <p>Browse our collection and find what you need.</p>
             <div class="d-flex flex-wrap justify-content-center gap-4">
@@ -60,6 +60,8 @@
                 renderCategoryCard("Monitors", 10);
                 renderCategoryCard("Storage", 25);
                 renderCategoryCard("Networking", 80);
+                renderCategoryCard("Peripherals", 50);
+                renderCategoryCard("Gaming", 300);
                 ?>
             </div>
         </div>

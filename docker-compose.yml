@@ -3,7 +3,8 @@ services:
   db:
     image: mysql
     volumes:
-      - ./docker/mysql:/var/lib/mysql
+      #- ./docker/mysql/data:/var/lib/mysql
+      - ./docker/mysql/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     environment:
       MYSQL_ROOT_PASSWORD: admin
       MYSQL_DATABASE: webshop
@@ -20,10 +21,9 @@ services:
       - 8083:80
     environment:
       PMA_HOST: db
-      MYSQL_ROOT_PASSWORD: admin
+      PMA_PORT: 3306
     networks:
       - web
-
   php:
     build: ./docker/php/
     expose:
