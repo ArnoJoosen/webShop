@@ -28,10 +28,24 @@
                     </li>
                 </ul>
                 <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="./login.php">
-                            <i class="fas fa-user"></i> Login
-                        </a>
+                    <?php
+                    session_start();
+                    if (isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true) { ?>
+                        <div class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <?php echo $_SESSION["first_name"] . " " . $_SESSION["last_name"]; ?>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="./cart.php">Winkel Card</a></li>
+                                <li><a class="dropdown-item" href="./orders.php">Orders</a></li>
+                                <li><a class="dropdown-item" href="./logout.php">Logout</a></li>
+                            </ul>
+                        </div>
+                    <?php } else { ?>
+                    <a class="nav-link" href="./login.php">
+                        <i class="fas fa-user"></i> Login
+                    </a>
+                    <?php } ?>
                     </li>
                 </ul>
             </div>
@@ -53,11 +67,11 @@
             $database = "webshop";
             $conn = new mysqli($dbservername, $dbusername, $dbpassword, $database);
 
-            $first_name = $_POST["first_name"];
-            $last_name = $_POST["last_name"];
-            $email = $_POST["email"];
-            $password = $_POST["password"];
-            $date_of_birth = $_POST["date_of_birth"];
+            $first_name = $_POST["first_name"]; // TODO check if the input is valid
+            $last_name = $_POST["last_name"]; // TODO check if the input is valid
+            $email = $_POST["email"]; // TODO check if the input is valid
+            $password = $_POST["password"]; // TODO check if the input is valid
+            $date_of_birth = $_POST["date_of_birth"]; // TODO check if the input is valid
             $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
             // Prepare and bind

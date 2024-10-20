@@ -29,9 +29,24 @@
                 </ul>
                 <ul class="navbar-nav">
                     <li class="nav-item">
+                        <?php
+                        session_start();
+                        if (isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true) { ?>
+                            <div class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <?php echo $_SESSION["first_name"] . " " . $_SESSION["last_name"]; ?>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    <li><a class="dropdown-item" href="./cart.php">Winkel Card</a></li>
+                                    <li><a class="dropdown-item" href="./orders.php">Orders</a></li>
+                                    <li><a class="dropdown-item" href="./logout.php">Logout</a></li>
+                                </ul>
+                            </div>
+                        <?php } else { ?>
                         <a class="nav-link" href="./login.php">
                             <i class="fas fa-user"></i> Login
                         </a>
+                        <?php } ?>
                     </li>
                 </ul>
             </div>

@@ -30,9 +30,24 @@
                 </ul>
                 <ul class="navbar-nav">
                     <li class="nav-item">
+                        <?php
+                        session_start();
+                        if (isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true) { ?>
+                            <div class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <?php echo $_SESSION["first_name"] . " " . $_SESSION["last_name"]; ?>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    <li><a class="dropdown-item" href="./cart.php">Winkel Card</a></li>
+                                    <li><a class="dropdown-item" href="./orders.php">Orders</a></li>
+                                    <li><a class="dropdown-item" href="./logout.php">Logout</a></li>
+                                </ul>
+                            </div>
+                        <?php } else { ?>
                         <a class="nav-link" href="./login.php">
                             <i class="fas fa-user"></i> Login
                         </a>
+                        <?php } ?>
                     </li>
                 </ul>
             </div>
@@ -47,8 +62,9 @@
     <!-- Main content -->
 <?php
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $email = $_POST["email"];
-        $password = $_POST["password"];
+        // check if session already started
+        $email = $_POST["email"]; // TODO check if email is valid
+        $password = $_POST["password"]; // TODO check if password is valid
         $dbservername = "db";
         $dbusername = "webuser"; // TOD change to env variable (security risk)
         $dbpassword = "webpassword"; // TOD change to env variable (security risk)
@@ -88,7 +104,8 @@
                 $_SESSION["email"] = $email;
 
                 // Redirect to index page
-                header("Location: index.php");
+                //header("Location: index.php");
+                echo '<div class="alert alert-success" role="alert">User logtin successfully</div>';
             } else {
                 // Display an error message if password is not valid
                 echo "The password you entered was not valid.";
