@@ -73,6 +73,7 @@
 
             // Close the statement
             $stmt->close();
+            $conn->close();
         } else { ?>
             <div class="row justify-content-center">
                 <div class="col-md-6 p-5 mb-4 rounded-3 border border-2">

@@ -45,10 +45,67 @@
     </nav>
 
     <!-- Main content -->
+<?php
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        $email = $_POST["email"];
+        $password = $_POST["password"];
+        $dbservername = "db";
+        $dbusername = "webuser"; // TOD change to env variable (security risk)
+        $dbpassword = "webpassword"; // TOD change to env variable (security risk)
+        $database = "webshop";
+
+        // Create connection
+        $conn = new mysqli($dbservername, $dbusername, $dbpassword, $database);
+
+        // Check connection
+        if ($conn->connect_error) {
+            die("Connection failed: " . $conn->connect_error); // TOD change to error page (security risk)
+        }
+
+        // Prepare and bind
+        $stmt = $conn->prepare("SELECT id, first_name, last_name, email, passwordhash FROM Customer WHERE email = ?");
+        $stmt->bind_param("s", $email);
+
+        // Execute the statement
+        $stmt->execute();
+
+        // Store the result
+        $stmt->store_result();
+
+        // Check if email exists
+        if ($stmt->num_rows > 0) {
+            $stmt->bind_result($id, $first_name, $last_name, $email, $passwordhash);
+            $stmt->fetch();
+
+            // Verify password
+            if (password_verify($password, $passwordhash)) {
+                // Password is correct, start a new session
+                session_start();
+                $_SESSION["loggedin"] = true;
+                $_SESSION["id"] = $id;
+                $_SESSION["first_name"] = $first_name;
+                $_SESSION["last_name"] = $last_name;
+                $_SESSION["email"] = $email;
+
+                // Redirect to index page
+                header("Location: index.php");
+            } else {
+                // Display an error message if password is not valid
+                echo "The password you entered was not valid.";
+            }
+        } else {
+            // Display an error message if email doesn't exist
+            echo "No account found with that email.";
+        }
+
+        // Close statement and connection
+        $stmt->close();
+        $conn->close();
+    } else { ?>
     <div class="container mt-5 login-container content">
         <div class="p-5 mb-4 rounded-3 border border-2">
             <h2 class="mb-4">Login</h2>
-            <form action="process_login.php" method="post">
+            <form action="login.php" method="post">
                 <div class="mb-3">
                     <label for="email" class="form-label">Email address</label>
                     <input type="email" class="form-control" id="email" name="email" required>
@@ -64,6 +121,7 @@
             </div>
         </div>
     </div>
+    <?php } ?>
 
     <!-- Footer -->
     <footer class="footer mt-auto py-3 theme">
