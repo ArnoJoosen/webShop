@@ -43,56 +43,68 @@
         </div>
     </nav>
     <!-- Main content -->
-    <div class="container mt-4">
-    <?php
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $dbservername = "db";
-        $dbusername = "webuser"; // TOD change to env variable (security risk)
-        $dbpassword = "webpassword"; // TOD change to env variable (security risk)
-        $database = "webshop";
-        $conn = new mysqli($dbservername, $dbusername, $dbpassword, $database);
+    <rewrite_this>
+        <div class="container mt-4">
+        <?php
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            $dbservername = "db";
+            $dbusername = "webuser"; // TOD change to env variable (security risk)
+            $dbpassword = "webpassword"; // TOD change to env variable (security risk)
+            $database = "webshop";
+            $conn = new mysqli($dbservername, $dbusername, $dbpassword, $database);
 
-        $username = $_POST["username"];
-        $email = $_POST["email"];
-        $password = $_POST["password"];
-        $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+            $first_name = $_POST["first_name"];
+            $last_name = $_POST["last_name"];
+            $email = $_POST["email"];
+            $password = $_POST["password"];
+            $date_of_birth = $_POST["date_of_birth"];
+            $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
-        // Prepare and bind
-        $stmt = $conn->prepare("INSERT INTO Customer (name, email, passwordhash) VALUES (?, ?, ?)");
-        $stmt->bind_param("sss", $username, $email, $passwordHash);
+            // Prepare and bind
+            $stmt = $conn->prepare("INSERT INTO Customer (first_name, last_name, email, passwordhash, date_of_birth) VALUES (?, ?, ?, ?, ?)");
+            $stmt->bind_param("sssss", $first_name, $last_name, $email, $passwordHash, $date_of_birth);
 
-        // Execute the statement
-        if ($stmt->execute() === TRUE) {
-            echo '<div class="alert alert-success" role="alert">User registered successfully</div>';
-        } else {
-            echo '<div class="alert alert-danger" role="alert">Error: ' . $stmt->error . '</div>';
-        }
+            // Execute the statement
+            if ($stmt->execute() === TRUE) {
+                echo '<div class="alert alert-success" role="alert">User registered successfully</div>'; // TODO change to redirect to login page after 3 seconds
+            } else {
+                echo '<div class="alert alert-danger" role="alert">Error: ' . $stmt->error . '</div>'; // TODO remove error message in production change to generic error message
+            }
 
-        // Close the statement
-        $stmt->close();
-    } else { ?>
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <h1>Register</h1>
-                <form action="register.php" method="post">
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
-                        <input type="text" class="form-control" id="username" name="username">
-                    </div>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email">
-                    </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" name="password">
-                    </div>
-                    <button type="submit" class="btn btn-primary">Register</button>
-                </form>
+            // Close the statement
+            $stmt->close();
+        } else { ?>
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <h1>Register</h1>
+                    <form action="register.php" method="post">
+                        <div class="mb-3">
+                            <label for="first_name" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="last_name" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email">
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password">
+                        </div>
+                        <div class="mb-3">
+                            <label for="date_of_birth" class="form-label">Date of Birth</label>
+                            <input type="date" class="form-control" id="date_of_birth" name="date_of_birth">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Register</button>
+                    </form>
+                </div>
             </div>
+        <?php } ?>
         </div>
-    <?php } ?>
-    </div>
+    </rewrite_this>
 
     <!-- Footer -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>

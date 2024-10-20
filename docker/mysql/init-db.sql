@@ -18,7 +18,8 @@ DROP TABLE IF EXISTS Customer;
 /* Create tables */
 CREATE TABLE Customer (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100),
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     `date_of_birth` DATE,
     passwordhash VARCHAR(100) NOT NULL
