@@ -44,7 +44,7 @@
     </nav>
     <!-- Main content -->
     <rewrite_this>
-        <div class="container mt-4">
+        <div class="container mt-4 ">
         <?php
         if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $dbservername = "db";
@@ -75,7 +75,7 @@
             $stmt->close();
         } else { ?>
             <div class="row justify-content-center">
-                <div class="col-md-6">
+                <div class="col-md-6 p-5 mb-4 rounded-3 border border-2">
                     <h1>Register</h1>
                     <form action="register.php" method="post">
                         <div class="mb-3">
@@ -113,6 +113,6 @@
         </div>
     </footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <script src="themeToggle.js"></script>
+    <script src="script/themeToggle.js"></script>
 </body>
 </html>
