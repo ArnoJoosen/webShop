@@ -59,47 +59,48 @@
     </nav>
     <!-- Main content -->
     <div class="container mt-4">
-        <div class="content-wrapper">
-            <h1>Welcome to Our Webshop!</h1>
-            <hr>
-            <p>Browse our collection and find what you need.</p>
-            <div class="d-flex flex-wrap justify-content-center gap-4">
-                <?php
-                    $servername = "db";
-                    $username = "webuser"; // TOD change to env variable (security risk)
-                    $password = "webpassword"; // TOD change to env variable (security risk)
-                    $database = "webshop";
+        <div class="d-flex flex-wrap justify-content-center gap-4">
+        <?php
+        $dbservername = "db";
+        $dbusername = "webuser"; // TOD change to env variable (security risk)
+        $dbpassword = "webpassword"; // TOD change to env variable (security risk)
+        $database = "webshop";
 
-                    // Create connection
-                    $conn = new mysqli($servername, $username, $password, $database);
+        // Create connection
+        $conn = new mysqli($dbservername, $dbusername, $dbpassword, $database);
 
-                    // Check connection
-                    if ($conn->connect_error) {
-                        die("Connection failed: " . $conn->connect_error); // TODO: remove (security risk)
-                    }
+        // check if category is set in url and get all products from category or subcategory
+        if (isset($_GET["category"])) {
+            $category = $_GET["category"];
+            // get all products in category and subcategories and all subcategories of subcategories
+            $sql = "WITH RECURSIVE CategoryHierarchy AS (
+                        SELECT id, name
+                        FROM Category
+                        WHERE id = $category
 
-                    // get categorie from url parameter if exists
-                    if (isset($_GET["category"])) {
-                        $category = $_GET["category"];
-                        // get all subcategories from main category
-                        $sql = "SELECT * FROM Category WHERE id IN (SELECT sub_category_id FROM Categorys WHERE main_category_id = $category)"; // TDO: prevent sql injection
-                    } else {
-                        $sql = "SELECT * FROM Category WHERE id NOT IN (SELECT sub_category_id FROM Categorys)";
-                    }
+                        UNION ALL
 
-                    $result = $conn->query($sql);
-
-                    if ($result->num_rows > 0) {
-                        while($row = $result->fetch_assoc()) {
-                            renderCategoryCard($row["name"], $row["id"]);
-                        }
-                    } else {
-                        echo "No categories found.";
-                    }
-
-                    $conn->close();
-                ?>
-            </div>
+                        SELECT c.id, c.name
+                        FROM Category c
+                        INNER JOIN Categorys cs ON c.id = cs.sub_category_id
+                        INNER JOIN CategoryHierarchy ch ON cs.main_category_id = ch.id
+                    )
+                    SELECT DISTINCT p.*, ch.name AS category_name
+                    FROM Product p
+                    INNER JOIN CategoryHierarchy ch ON p.category_id = ch.id;"; // TODO remove SQL injection risk
+        } else {
+            // get all products
+            $sql = "SELECT * FROM Product";
+        }
+        $result = $conn->query($sql); // TODO split up in pages
+        if ($result && $result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                renderProductCard($row["name"], $row["description"], $row["price"], 564);
+            }
+        } else {
+            echo "<div class='alert alert-warning'>No products found</div>";
+        }
+        ?>
         </div>
     </div>
 

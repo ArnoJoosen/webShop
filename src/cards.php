@@ -31,7 +31,7 @@ function renderProductCard($name, $description, $price, $imageId = null) {
             ); ?></strong></p>
             <a href="#" class="btn btn-primary">Add to Cart</a>
         </div>
-    </div>me
+    </div>
     <?php
 }
 ?>

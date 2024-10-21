@@ -22,7 +22,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Products</a>
+                        <a class="nav-link" href="products.php">Products</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">Contact</a>
@@ -104,8 +104,8 @@
                 $_SESSION["email"] = $email;
 
                 // Redirect to index page
-                //header("Location: index.php");
-                echo '<div class="alert alert-success" role="alert">User logtin successfully</div>';
+                header("Location: index.php");
+                //echo '<div class="alert alert-success" role="alert">User logtin successfully</div>';
             } else {
                 // Display an error message if password is not valid
                 echo "The password you entered was not valid.";
