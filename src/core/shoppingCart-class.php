@@ -104,7 +104,7 @@ class ShoppingCart {
     public function displayCart() {
         // Fetch ShoppingCart items for the customer
         $stmt = $this->conn->prepare("SELECT Product.name, Product.price, ShoppingCart.quantity, Product.id FROM ShoppingCart JOIN Product ON ShoppingCart.product_id = Product.id WHERE ShoppingCart.customer_id = ?");
-        $stmt->bind_param("i", $_SESSION["id"]);
+        $stmt->bind_param("i", $this->customID);
         $stmt->execute();
         $result = $stmt->get_result();
 
