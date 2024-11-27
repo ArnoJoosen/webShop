@@ -14,6 +14,14 @@
                     <a class="nav-link" href="#">Contact</a>
                 </li>
             </ul>
+            <form class="d-flex justify-content-center mx-auto" style="width: 60%;">
+                <div class="position-relative w-100">
+                    <input class="form-control pe-5" type="search" placeholder="Search" aria-label="Search">
+                    <button class="btn position-absolute end-0 top-50 translate-middle-y" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
             <ul class="navbar-nav">
                 <li class="nav-item">
                     <?php
@@ -29,7 +37,7 @@
                                     $_SESSION["last_name"]; ?>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                <li><a class="dropdown-item" href="./cart.php">Winkel Card</a></li>
+                                <li><a class="dropdown-item" href="./shoppingCart.php">Shopping Card</a></li>
                                 <li><a class="dropdown-item" href="./orders.php">Orders</a></li>
                                 <li><a class="dropdown-item" href="./logout.php">Logout</a></li>
                             </ul>

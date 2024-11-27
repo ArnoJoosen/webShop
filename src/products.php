@@ -56,6 +56,7 @@
                     $row["name"],
                     $row["description"],
                     $row["price"],
+                    $row["id"],
                     564
                 );
             }
