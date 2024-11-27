@@ -11,93 +11,70 @@
     <!--<link href="css/blue-theme.css" rel="stylesheet">-->
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light">
-        <div class="container">
-            <a class="navbar-brand" href="/">Webshop</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="products.php">Products</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Contact</a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <?php
-                        session_start();
-                        if (isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true) { ?>
-                            <div class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <?php echo $_SESSION["first_name"] . " " . $_SESSION["last_name"]; ?>
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                    <li><a class="dropdown-item" href="./cart.php">Winkel Card</a></li>
-                                    <li><a class="dropdown-item" href="./orders.php">Orders</a></li>
-                                    <li><a class="dropdown-item" href="./logout.php">Logout</a></li>
-                                </ul>
-                            </div>
-                        <?php } else { ?>
-                        <a class="nav-link" href="./login.php">
-                            <i class="fas fa-user"></i> Login
-                        </a>
-                        <?php } ?>
-                    </li>
-                </ul>
-            </div>
-            <div class="theme-toggle ms-2">
-                <button id="themeToggle" class="btn btn-outline-light btn-sm">
-                    <i class="fas fa-sun"></i>
-                </button>
-            </div>
-        </div>
-    </nav>
+    <?php include "navBar.php"; ?>
     <!-- Main content -->
     <div class="container mt-4">
         <div class="content-wrapper">
             <h1>Welcome to Our Webshop!</h1>
             <hr>
-            <p>Browse our collection and find what you need.</p>
+            <div class="text-center mb-3">
+                <div class="d-flex align-items-center justify-content-center">
+                    <p class="mb-0 me-3">Browse products by category</p>
+                    <a href="<?php echo isset($_GET["category"])
+                        ? "products.php?category=" . $_GET["category"]
+                        : "products.php"; ?>" class="link">View Products</a>
+                </div>
+            </div>
             <div class="d-flex flex-wrap justify-content-center gap-4">
                 <?php
-                    $servername = "db";
-                    $username = "webuser"; // TOD change to env variable (security risk)
-                    $password = "webpassword"; // TOD change to env variable (security risk)
-                    $database = "webshop";
+                $servername = "db";
+                $username = "webuser"; // TOD change to env variable (security risk)
+                $password = "webpassword"; // TOD change to env variable (security risk)
+                $database = "webshop";
 
-                    // Create connection
-                    $conn = new mysqli($servername, $username, $password, $database);
+                // Create connection
+                $conn = new mysqli(
+                    $servername,
+                    $username,
+                    $password,
+                    $database
+                );
 
-                    // Check connection
-                    if ($conn->connect_error) {
-                        die("Connection failed: " . $conn->connect_error); // TODO: remove (security risk)
+                // Check connection
+                if ($conn->connect_error) {
+                    die("Connection failed: " . $conn->connect_error); // TODO: remove (security risk)
+                }
+
+                // get categorie from url parameter if exists
+                if (isset($_GET["category"])) {
+                    $category = $_GET["category"];
+                    // get all subcategories from main category
+                    $sql = "SELECT * FROM Category WHERE id IN (SELECT sub_category_id FROM Categorys WHERE main_category_id = $category)"; // TDO: prevent sql injection
+                } else {
+                    $sql =
+                        "SELECT * FROM Category WHERE id NOT IN (SELECT sub_category_id FROM Categorys)";
+                }
+
+                $result = $conn->query($sql);
+
+                if ($result->num_rows > 0) {
+                    while ($row = $result->fetch_assoc()) {
+                        renderCategoryCard(
+                            $row["name"],
+                            "?category=" . $row["id"],
+                            $row["id"]
+                        );
                     }
-
-                    // get categorie from url parameter if exists
+                } else {
                     if (isset($_GET["category"])) {
                         $category = $_GET["category"];
-                        // get all subcategories from main category
-                        $sql = "SELECT * FROM Category WHERE id IN (SELECT sub_category_id FROM Categorys WHERE main_category_id = $category)"; // TDO: prevent sql injection
+                        header("Location: products.php?category=" . $category);
                     } else {
-                        $sql = "SELECT * FROM Category WHERE id NOT IN (SELECT sub_category_id FROM Categorys)";
+                        echo "No category where found";
                     }
+                }
 
-                    $result = $conn->query($sql);
-
-                    if ($result->num_rows > 0) {
-                        while($row = $result->fetch_assoc()) {
-                            renderCategoryCard($row["name"], $row["id"]);
-                        }
-                    } else {
-                        echo "No categories found.";
-                    }
-
-                    $conn->close();
+                $conn->close();
                 ?>
             </div>
         </div>

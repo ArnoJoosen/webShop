@@ -13,112 +13,70 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light">
-        <div class="container">
-            <a class="navbar-brand" href="/">Webshop</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="products.php">Products</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Contact</a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <?php
-                        session_start();
-                        if (isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true) { ?>
-                            <div class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <?php echo $_SESSION["first_name"] . " " . $_SESSION["last_name"]; ?>
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                    <li><a class="dropdown-item" href="./cart.php">Winkel Card</a></li>
-                                    <li><a class="dropdown-item" href="./orders.php">Orders</a></li>
-                                    <li><a class="dropdown-item" href="./logout.php">Logout</a></li>
-                                </ul>
-                            </div>
-                        <?php } else { ?>
-                        <a class="nav-link" href="./login.php">
-                            <i class="fas fa-user"></i> Login
-                        </a>
-                        <?php } ?>
-                    </li>
-                </ul>
-            </div>
-            <div class="theme-toggle ms-2">
-                <button id="themeToggle" class="btn btn-outline-light btn-sm">
-                    <i class="fas fa-sun"></i>
-                </button>
-            </div>
-        </div>
-    </nav>
+    <?php include "navBar.php"; ?>
 
     <!-- Main content -->
-<?php
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        // check if session already started
-        $email = $_POST["email"]; // TODO check if email is valid
-        $password = $_POST["password"]; // TODO check if password is valid
-        $dbservername = "db";
-        $dbusername = "webuser"; // TOD change to env variable (security risk)
-        $dbpassword = "webpassword"; // TOD change to env variable (security risk)
-        $database = "webshop";
+<?php if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // check if session already started
+    $email = $_POST["email"]; // TODO check if email is valid
+    $password = $_POST["password"]; // TODO check if password is valid
+    $dbservername = "db";
+    $dbusername = "webuser"; // TOD change to env variable (security risk)
+    $dbpassword = "webpassword"; // TOD change to env variable (security risk)
+    $database = "webshop";
 
-        // Create connection
-        $conn = new mysqli($dbservername, $dbusername, $dbpassword, $database);
+    // Create connection
+    $conn = new mysqli($dbservername, $dbusername, $dbpassword, $database);
 
-        // Check connection
-        if ($conn->connect_error) {
-            die("Connection failed: " . $conn->connect_error); // TOD change to error page (security risk)
-        }
+    // Check connection
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error); // TOD change to error page (security risk)
+    }
 
-        // Prepare and bind
-        $stmt = $conn->prepare("SELECT id, first_name, last_name, email, passwordhash FROM Customer WHERE email = ?");
-        $stmt->bind_param("s", $email);
+    // Prepare and bind
+    $stmt = $conn->prepare(
+        "SELECT id, first_name, last_name, email, passwordhash FROM Customer WHERE email = ?"
+    );
+    $stmt->bind_param("s", $email);
 
-        // Execute the statement
-        $stmt->execute();
+    // Execute the statement
+    $stmt->execute();
 
-        // Store the result
-        $stmt->store_result();
+    // Store the result
+    $stmt->store_result();
 
-        // Check if email exists
-        if ($stmt->num_rows > 0) {
-            $stmt->bind_result($id, $first_name, $last_name, $email, $passwordhash);
-            $stmt->fetch();
+    // Check if email exists
+    if ($stmt->num_rows > 0) {
+        $stmt->bind_result($id, $first_name, $last_name, $email, $passwordhash);
+        $stmt->fetch();
 
-            // Verify password
-            if (password_verify($password, $passwordhash)) {
-                // Password is correct, start a new session
-                session_start();
-                $_SESSION["loggedin"] = true;
-                $_SESSION["id"] = $id;
-                $_SESSION["first_name"] = $first_name;
-                $_SESSION["last_name"] = $last_name;
-                $_SESSION["email"] = $email;
+        // Verify password
+        if (password_verify($password, $passwordhash)) {
+            // Password is correct, start a new session
+            session_start();
+            $_SESSION["loggedin"] = true;
+            $_SESSION["id"] = $id;
+            $_SESSION["first_name"] = $first_name;
+            $_SESSION["last_name"] = $last_name;
+            $_SESSION["email"] = $email;
 
-                // Redirect to index page
-                header("Location: index.php");
-                //echo '<div class="alert alert-success" role="alert">User logtin successfully</div>';
-            } else {
-                // Display an error message if password is not valid
-                echo "The password you entered was not valid.";
-            }
+            // Redirect to index page
+            header("Location: index.php");
+            //echo '<div class="alert alert-success" role="alert">User logtin successfully</div>';
         } else {
-            // Display an error message if email doesn't exist
-            echo "No account found with that email.";
+            // Display an error message if password is not valid
+            echo "The password you entered was not valid.";
         }
+    } else {
+        // Display an error message if email doesn't exist
+        echo "No account found with that email.";
+    }
 
-        // Close statement and connection
-        $stmt->close();
-        $conn->close();
-    } else { ?>
+    // Close statement and connection
+    $stmt->close();
+    $conn->close();
+} else {
+     ?>
     <div class="container mt-5 login-container content">
         <div class="p-5 mb-4 rounded-3 border border-2">
             <h2 class="mb-4">Login</h2>
@@ -138,7 +96,8 @@
             </div>
         </div>
     </div>
-    <?php } ?>
+    <?php
+} ?>
 
     <!-- Footer -->
     <footer class="footer mt-auto py-3 theme">
