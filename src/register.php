@@ -1,4 +1,3 @@
-<?php include "cards.php"; ?>
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
 <head>
@@ -12,7 +11,7 @@
 </head>
 <body>
     <!-- Navigation -->
-    <?php include "navBar.php"; ?>
+    <?php include "core/navBar.php"; ?>
 
     <!-- Main content -->
     <rewrite_this>

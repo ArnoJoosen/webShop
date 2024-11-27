@@ -1,4 +1,4 @@
-<?php include "cards.php"; ?>
+<?php include "core/cards.php"; ?>
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
 <head>
@@ -11,7 +11,7 @@
     <!--<link href="css/blue-theme.css" rel="stylesheet">-->
 </head>
 <body>
-    <?php include "navBar.php"; ?>
+    <?php include "core/navBar.php"; ?>
     <!-- Main content -->
     <div class="container mt-4">
         <div class="content-wrapper">

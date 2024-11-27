@@ -1,5 +1,5 @@
 <?php
-include "shoppingCart-class.php";
+include "core/shoppingCart-class.php";
 ?>
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
@@ -13,7 +13,7 @@ include "shoppingCart-class.php";
     <!--<link href="css/blue-theme.css" rel="stylesheet">-->
 </head>
     <body>
-        <?php include "navBar.php"; ?>
+        <?php include "core/navBar.php"; ?>
         <!-- Main content -->
         <div class="container mt-4">
             <?php
