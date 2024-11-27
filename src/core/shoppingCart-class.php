@@ -23,6 +23,15 @@ class ShoppingCart {
         mysqli_close($this->conn);
     }
 
+    public function getCount() {
+        $stmt = $this->conn->prepare("SELECT SUM(quantity) AS total FROM ShoppingCart WHERE customer_id = ?");
+        $stmt->bind_param("i", $this->customID);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        return $row["total"];
+    }
+
     public function addItem($itemId) {
         // Check if product exists in cart
         $checkStmt = $this->conn->prepare("SELECT id, quantity FROM ShoppingCart WHERE customer_id = ? AND product_id = ?");
@@ -117,6 +126,52 @@ class ShoppingCart {
                     <th>Price</th>
                     <th>Quantity</th>
                     <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                $total = 0;
+                while ($row = $result->fetch_assoc()) {
+                    $row_total = $row['price'] * $row['quantity'];
+                    $total += $row_total;
+                    ?>
+                    <tr>
+                        <td> <?php echo htmlspecialchars($row['name']); ?> </td>
+                        <td> <?php echo number_format($row['price'], 2); ?> € </td>
+                        <td> <?php echo $row['quantity']; ?> </td>
+                        <td> <?php echo number_format($row_total, 2); ?> € </td>
+                    </tr>
+                <?php
+                }
+                ?>
+                <tr>
+                    <td colspan="3" class="text-end"><strong>Total</strong></td>
+                    <td><strong> <?php echo number_format($total, 2); ?> € </strong></td>
+                </tr>
+            </tbody>
+            </table>
+            <?php
+        } else {
+            echo '<p>Your shopping cart is empty.</p>';
+        }
+    }
+
+    public function displayCartEditor() {
+        // Fetch ShoppingCart items for the customer
+        $stmt = $this->conn->prepare("SELECT Product.name, Product.price, ShoppingCart.quantity, Product.id FROM ShoppingCart JOIN Product ON ShoppingCart.product_id = Product.id WHERE ShoppingCart.customer_id = ?");
+        $stmt->bind_param("i", $this->customID);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        // Display cart items if there are any
+        if ($result->num_rows > 0) {
+            ?><table class="table mt-4">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
                     <th></th> <!-- Empty column for delete button -->
                 </tr>
             </thead>
@@ -167,6 +222,10 @@ class ShoppingCart {
         } else {
             echo '<p>Your shopping cart is empty.</p>';
         }
+    }
+
+    public function checkout() {
+        // TODO implement
     }
 }
 ?>

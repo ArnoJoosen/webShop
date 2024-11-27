@@ -1,6 +1,4 @@
-<?php
-include "core/shoppingCart-class.php";
-?>
+<?php include "core/shoppingCart-class.php"; ?>
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
 <head>
@@ -43,11 +41,11 @@ include "core/shoppingCart-class.php";
                     }
                     ?>
                     <?php
-                    $cart->displayCart();
+                    $cart->displayCartEditor();
                     ?>
                     <div class="mt-4">
                         <button class="btn btn-secondary me-2" onclick="history.back()">Back to Shopping</button>
-                        <a href="winkelwagen.php" class="btn btn-primary">Checkout</a>
+                        <a href="checkout.php" class="btn btn-primary <?php echo ($cart->getCount() == 0 ? 'disabled' : ''); ?>">Order</a>
                     </div>
                 </div>
               <?php
@@ -58,11 +56,11 @@ include "core/shoppingCart-class.php";
                     <div class="text-center">
                         <h2> Shopping Cart</h2>
                         <?php
-                        $cart->displayCart();
+                        $cart->displayCartEditor();
                         ?>
                         <div class="mt-4">
                             <button class="btn btn-secondary me-2" onclick="history.back()">Back to Shopping</button>
-                            <a href="winkelwagen.php" class="btn btn-primary">Checkout</a>
+                            <a href="checkout.php" class="btn btn-primary <?php echo ($cart->getCount() == 0 ? 'disabled' : ''); ?>">Order</a>
                         </div>
                     </div>
               <?php } ?>
