@@ -14,8 +14,22 @@ DROP TABLE IF EXISTS Categorys;
 DROP TABLE IF EXISTS Category;
 DROP TABLE IF EXISTS Address;
 DROP TABLE IF EXISTS Customer;
+DROP TABLE IF EXISTS Admins;
 
 /* Create tables */
+
+CREATE TABLE Admins (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    role ENUM('superAdmin', 'admin') NOT NULL,
+    passwordhash VARCHAR(100) NOT NULL
+);
+
+/* inserting super admin*/
+INSERT INTO Admins (first_name, last_name, role, passwordhash)
+        VALUES ('SAdmin', 'SAdmin', 'superAdmin', "$2y$10$F5/0OrChMOsrK22InclUkeEG598PK8ex5s11GIne1yuvo8ThrxqEy");
+
 CREATE TABLE Customer (
     id INT AUTO_INCREMENT PRIMARY KEY,
     first_name VARCHAR(100) NOT NULL,
