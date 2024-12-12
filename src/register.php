@@ -11,7 +11,7 @@
 </head>
 <body>
     <!-- Navigation -->
-    <?php include "core/navBar.php"; ?>
+    <?php include "core/pageElements/navBar.php"; ?>
 
     <!-- Main content -->
     <rewrite_this>

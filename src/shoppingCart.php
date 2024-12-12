@@ -12,59 +12,68 @@
     <script src="script/shoppingCart.js"></script>
 </head>
     <body>
-        <?php include "core/navBar.php"; ?>
+        <?php include "core/pageElements/navBar.php"; ?>
         <!-- Main content -->
         <div class="container mt-4">
             <?php
-            if (!isset($_SESSION['loggedin'])) {
-                header('Location: login.php');
-                exit;
+            if (!isset($_SESSION["loggedin"])) {
+                header("Location: login.php");
+                exit();
             }
             // post request
-            if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["product_id"]) && isset($_POST["name"]) && isset($_POST["action"])) {
+            if (
+                $_SERVER["REQUEST_METHOD"] == "POST" &&
+                isset($_POST["product_id"]) &&
+                isset($_POST["name"]) &&
+                isset($_POST["action"])
+            ) {
                 // create a new shopping cart object for the user
-                $cart = new ShoppingCart($_SESSION["id"]);
-                ?>
+                $cart = new ShoppingCart($_SESSION["id"]); ?>
                 <div class="text-center">
-                    <?php
-                    if ($_POST["action"] == "add") {
+                    <div id="ajax">
+                    <?php if ($_POST["action"] == "add") {
                         $cart->addItem($_POST["product_id"]);
                         echo "<h2>" . $_POST["name"] . " Added to Cart</h2>";
-                    } else if ($_POST["action"] == "remove") {
+                    } elseif ($_POST["action"] == "remove") {
                         $cart->removeItem($_POST["product_id"]);
-                        echo "<h2>" . $_POST["name"] . " Removed from Cart</h2>";
-                    } else if ($_POST["action"] == "decrement") {
+                        echo "<h2>" .
+                            $_POST["name"] .
+                            " Removed from Cart</h2>";
+                    } elseif ($_POST["action"] == "decrement") {
                         $cart->decrementItem($_POST["product_id"]);
-                        echo "<h2>One " . $_POST["name"] . " Removed from Cart</h2>";
-                    } else if ($_POST["action"] == "increment") {
+                        echo "<h2>One " .
+                            $_POST["name"] .
+                            " Removed from Cart</h2>";
+                    } elseif ($_POST["action"] == "increment") {
                         $cart->incrementItem($_POST["product_id"]);
-                        echo "<h2>One " . $_POST["name"] . " Added to Cart</h2>";
-                    }
-                    ?>
-                    <?php
-                    $cart->displayCartEditor();
-                    ?>
+                        echo "<h2>One " .
+                            $_POST["name"] .
+                            " Added to Cart</h2>";
+                    } ?>
+                        <?php $cart->displayCartEditor(); ?>
+                    </div>
                     <div class="mt-4">
                         <button class="btn btn-secondary me-2" onclick="history.back()">Back to Shopping</button>
-                        <a href="checkout.php" class="btn btn-primary <?php echo ($cart->getCount() == 0 ? 'disabled' : ''); ?>">Order</a>
+                        <a href="checkout.php" class="btn btn-primary <?php echo $cart->getCount() == 0 ? "disabled": ""; ?>">Order</a>
                     </div>
                 </div>
               <?php
-                } else {
-                    // create a new shopping cart object for the user if not already created
-                    $cart = new ShoppingCart($_SESSION["id"]);
-                    ?>
+            } else {
+                // create a new shopping cart object for the user if not already created
+                $cart = new ShoppingCart($_SESSION["id"]); ?>
                     <div class="text-center">
+                        <div id="ajax">
                         <h2> Shopping Cart</h2>
-                        <?php
-                        $cart->displayCartEditor();
-                        ?>
+                            <?php $cart->displayCartEditor(); ?>
+                        </div>
                         <div class="mt-4">
                             <button class="btn btn-secondary me-2" onclick="history.back()">Back to Shopping</button>
-                            <a href="checkout.php" class="btn btn-primary <?php echo ($cart->getCount() == 0 ? 'disabled' : ''); ?>">Order</a>
+                            <a href="checkout.php" class="btn btn-primary <?php echo $cart->getCount() == 0 ? "disabled" : ""; ?>">Order</a>
                         </div>
                     </div>
-              <?php } ?>
+              <?php
+            }
+            ?>
         </div>
         <!-- Footer -->
         <footer class="footer mt-auto py-3 theme">

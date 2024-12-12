@@ -11,13 +11,16 @@
                     <a class="nav-link" href="products.php">Products</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Contact</a>
+                    <a class="nav-link" href="#">Coontact</a>
                 </li>
             </ul>
             <form class="d-flex justify-content-center mx-auto" style="width: 60%;">
                 <div class="position-relative w-100">
-                    <input class="form-control pe-5" type="search" placeholder="Search" aria-label="Search">
-                    <button class="btn position-absolute end-0 top-50 translate-middle-y" type="submit">
+                    <input
+                        class="form-control pe-5" type="search" name="search" placeholder="Search" aria-label="Search" id="search"
+                        value="<?php echo (basename($_SERVER['PHP_SELF']) == 'products.php' && isset($_GET['search'])) ? htmlspecialchars($_GET['search']) : ''; ?>"
+                        <?php echo basename($_SERVER['PHP_SELF']) == 'products.php' ? 'onkeyup="onSearch();"' : ''; // search on keyup when on products page ?>/>
+                    <button class="btn position-absolute end-0 top-50 translate-middle-y" type="submit" formaction="products.php">
                         <i class="fas fa-search"></i>
                     </button>
                 </div>

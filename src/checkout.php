@@ -11,7 +11,7 @@
     <!--<link href="css/blue-theme.css" rel="stylesheet">-->
 </head>
 <body>
-    <?php include "core/navBar.php"; ?>
+    <?php include "core/pageElements/navBar.php"; ?>
     <!-- Main content -->
     <div class="container mt-4">
         <?php

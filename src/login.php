@@ -12,7 +12,7 @@
 </head>
 <body>
     <!-- Navigation -->
-    <?php include "core/navBar.php"; ?>
+    <?php include "core/pageElements/navBar.php"; ?>
 
     <!-- Main content -->
 <?php if ($_SERVER["REQUEST_METHOD"] == "POST") {
