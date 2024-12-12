@@ -19,7 +19,107 @@
     <?php include "pageElements/navBar.php"; ?>
     <!-- Main content -->
     <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-12">
+                <h1>Welcome to Admin Dashboard</h1>
+                <p class="lead">Manage your webshop from here.</p>
+            </div>
+        </div>
 
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-box"></i> Products</h5>
+                        <p class="card-text">Manage products, inventory, and categories.</p>
+                        <a href="products.php" class="btn btn-primary">Manage Products</a>
+                        <a href="categories.php" class="btn btn-secondary">Manage Categories</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-users"></i> Users</h5>
+                        <p class="card-text">Manage customer accounts and admin users.</p>
+                        <a href="users.php" class="btn btn-primary">Manage Users</a>
+                        <!-- Only superAdmin can manage admins -->
+                        <a href="admins.php" class="btn btn-secondary <?php echo ($_SESSION['admin_role'] !== 'superAdmin') ? 'disabled' : ''; ?>">Manage Admins</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-shopping-cart"></i> Orders</h5>
+                        <p class="card-text">View and process customer orders.</p>
+                        <a href="orders.php" class="btn btn-primary">Manage Orders</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <!-- TODO use database  -->
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-chart-line"></i> Recent Activity</h5>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">New order #1234 received</li>
+                            <li class="list-group-item">Product inventory updated</li>
+                            <li class="list-group-item">New user registration</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-chart-bar"></i> Quick Stats</h5>
+                        <ul class="list-group list-group-flush">
+                            <?php
+                                $servername = "db";
+                                $username = "webuser"; // TOD change to env variable (security risk)
+                                $password = "webpassword"; // TOD change to env variable (security risk)
+                                $database = "webshop";
+
+                                // Create connection
+                                $conn = new mysqli(
+                                    $servername,
+                                    $username,
+                                    $password,
+                                    $database
+                                );
+
+                                // Check connection
+                                if ($conn->connect_error) {
+                                    die("Connection failed: " . $conn->connect_error); // TODO: remove (security risk)
+                                }
+
+                                // Count registered users
+                                $userQuery = "SELECT COUNT(*) as count FROM Customer";
+                                $userResult = $conn->query($userQuery);
+                                $userCount = $userResult->fetch_assoc()['count'];
+
+                                // Count pending orders
+                                $orderQuery = "SELECT COUNT(*) as count FROM Orders";
+                                $orderResult = $conn->query($orderQuery);
+                                $orderCount = $orderResult->fetch_assoc()['count'];
+
+                                // Count out of stock items
+                                $stockQuery = "SELECT COUNT(*) as count FROM Product WHERE stock = 0";
+                                $stockResult = $conn->query($stockQuery);
+                                $stockCount = $stockResult->fetch_assoc()['count'];
+                            ?>
+                            <li class="list-group-item">Registered Users: <span class="fw-bold text-primary"><?php echo $userCount; ?></span></li>
+                            <li class="list-group-item">Pending Orders: <span class="fw-bold text-primary"><?php echo $orderCount; ?></span></li>
+                            <li class="list-group-item">Out of Stock Items: <span class="fw-bold text-primary"><?php echo $stockCount; ?></span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Footer -->
