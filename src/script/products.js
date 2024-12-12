@@ -1,6 +1,5 @@
 function onSearch() {
   var search = document.getElementById("search").value;
-  if (search.length < 2) return; // Don't search for less than 2 characters to avoid too many requests to the server
   xhr = new XMLHttpRequest();
   if (xhr == null) {
     alert("Your browser does not support XMLHTTP!");

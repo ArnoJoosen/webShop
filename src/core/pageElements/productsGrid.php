@@ -26,7 +26,7 @@ if (isset($_GET["category"])) {
             SELECT DISTINCT p.*, ch.name AS category_name
             FROM Product p
             INNER JOIN CategoryHierarchy ch ON p.category_id = ch.id;"; // TODO remove SQL injection risk
-} elseif (isset($_GET["search"])) {
+} elseif (isset($_GET["search"]) && $_GET["search"] != "") {
     $search = $_GET["search"];
     // get all products that contain search string
     $sql = "SELECT * FROM Product WHERE name LIKE '%$search%' OR description LIKE '%$search%'";
