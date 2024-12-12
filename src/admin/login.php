@@ -31,7 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['username']) && isset($
         die("Connection failed: " . $conn->connect_error); // TODO: remove (security risk)
     }
 
-    $stmt = $conn->prepare("SELECT * FROM Admins WHERE first_name = ?");
+    $stmt = $conn->prepare("SELECT * FROM Admins WHERE username = ?");
     $stmt->bind_param("s", $username);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -39,8 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['username']) && isset($
 
     if ($admin && password_verify($password, $admin['passwordhash'])) {
         $_SESSION["admin_loggedin"] = true;
-        $_SESSION['admin_first_name'] = $admin['first_name'];
-        $_SESSION['admin_last_name'] = $admin['last_name'];
+        $_SESSION["admin_username"] = $admin['username'];
         $_SESSION['admin_id'] = $admin['id'];
         $_SESSION['admin_role'] = $admin['role'];
         header("Location: /admin/admin.php");

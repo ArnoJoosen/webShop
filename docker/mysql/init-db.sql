@@ -20,6 +20,7 @@ DROP TABLE IF EXISTS Admins;
 
 CREATE TABLE Admins (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) UNIQUE NOT NULL,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
     role ENUM('superAdmin', 'admin') NOT NULL,
@@ -27,8 +28,8 @@ CREATE TABLE Admins (
 );
 
 /* inserting super admin*/
-INSERT INTO Admins (first_name, last_name, role, passwordhash)
-        VALUES ('SAdmin', 'SAdmin', 'superAdmin', "$2y$10$F5/0OrChMOsrK22InclUkeEG598PK8ex5s11GIne1yuvo8ThrxqEy");
+INSERT INTO Admins (username, first_name, last_name, role, passwordhash)
+        VALUES ('SAdmin', '', '', 'superAdmin', "$2y$10$F5/0OrChMOsrK22InclUkeEG598PK8ex5s11GIne1yuvo8ThrxqEy");
 
 CREATE TABLE Customer (
     id INT AUTO_INCREMENT PRIMARY KEY,

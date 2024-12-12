@@ -1,7 +1,92 @@
 <?php
     session_start();
-    if (!isset($_SESSION["admin_loggedin"]) && $_SESSION["admin_loggedin"] !== true) {
+    if (!isset($_SESSION["admin_loggedin"]) && $_SESSION["admin_loggedin"] !== true && $_SESSION["admin_role"] !== 'superAdmin') {
         header("Location: login.php");
+    }
+
+    // Database connection
+    $servername = "db";
+    $username = "webuser"; // TOD change to env variable (security risk)
+    $password = "webpassword"; // TOD change to env variable (security risk)
+    $database = "webshop";
+
+    // Create connection
+    $conn = new mysqli(
+        $servername,
+        $username,
+        $password,
+        $database
+    );
+
+    // Check connection
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error); // TODO: remove (security risk)
+    }
+
+    if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"])) {
+        if ($_POST["action"] == "add"
+                && isset($_POST["firstName"]) && isset($_POST["lastName"])
+                && isset($_POST["username"]) && isset($_POST["password"])
+                && isset($_POST["superAdmin"])) {
+
+            $firstName = $_POST["firstName"];
+            $lastName = $_POST["lastName"];
+            $username = $_POST["username"];
+            $password = password_hash($password, PASSWORD_DEFAULT);
+            $role = $_POST["superAdmin"] ? "superAdmin" : "admin";
+
+            $stmt = $conn->prepare("INSERT INTO Admins (first_name, last_name, username, passwordhash, role) VALUES (?, ?, ?, ?, ?)");
+            $stmt->bind_param("sssss", $firstName, $lastName, $username, $password, $role);
+            // Execute the statement
+            if ($stmt->execute() != true) {
+                echo '<div class="alert alert-danger" role="alert">Error: ' .
+                    $stmt->error .
+                    "</div>"; // TODO remove error message in production change to generic error message
+                exit();
+            }
+        } elseif ($_POST["action"] == "delete" && isset($_POST["id"])) {
+            $stmt = $conn->prepare("DELETE FROM Admins WHERE id = ?");
+            $stmt->bind_param("i", $_POST["id"]);
+            // Execute the statement
+            if ($stmt->execute() != true) {
+                echo '<div class="alert alert-danger" role="alert">Error: ' .
+                    $stmt->error .
+                    "</div>"; // TODO remove error message in production change to generic error message
+                exit();
+            }
+        }
+        ?>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    $sql = "SELECT * FROM Admins ORDER BY last_name, first_name";
+                    $result = $conn->query($sql);
+
+                    while($row = $result->fetch_assoc()) {
+                        echo "<tr>";
+                        echo "<td>" . htmlspecialchars($row['username']) . "</td>";
+                        echo "<td>" . htmlspecialchars($row['first_name']) . "</td>";
+                        echo "<td>" . htmlspecialchars($row['last_name']) . "</td>";
+                        echo "<td>" . htmlspecialchars($row['role']) . "</td>";
+                        echo "<td>";
+                        echo "<button class='btn btn-danger btn-sm delete-admin' onclick='onDelete(" . $row['id'] . ")'><i class='fas fa-trash'></i></button>";
+                        echo "</td>";
+                        echo "</tr>";
+                    }
+                    ?>
+                </tbody>
+            </table>
+        <?php
+        exit();
     }
 ?>
 <!DOCTYPE html>
@@ -14,12 +99,91 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="../css/styles.css">
     <!--<link href="css/blue-theme.css" rel="stylesheet">-->
+    <script src="script/admins.js"> </script>
 </head>
 <body>
     <?php include "pageElements/navBar.php"; ?>
     <!-- Main content -->
     <div class="container mt-4">
+                <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Create New Admin</h5>
+            </div>
+            <div class="card-body">
+                <form id="adminForm" onsubmit="submitForm(event)">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="firstName" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="firstName" name="firstName" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="lastName" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="lastName" name="lastName" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="superAdmin" name="superAdmin">
+                                <label class="form-check-label" for="superAdmin">
+                                    Super Admin
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create Admin</button>
+                </form>
+            </div>
+        </div>
 
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Admin List</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive" id="ajax">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Role</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            $sql = "SELECT * FROM Admins ORDER BY last_name, first_name";
+                            $result = $conn->query($sql);
+
+                            while($row = $result->fetch_assoc()) {
+                                echo "<tr>";
+                                echo "<td>" . htmlspecialchars($row['username']) . "</td>";
+                                echo "<td>" . htmlspecialchars($row['first_name']) . "</td>";
+                                echo "<td>" . htmlspecialchars($row['last_name']) . "</td>";
+                                echo "<td>" . htmlspecialchars($row['role']) . "</td>";
+                                echo "<td>";
+                                echo "<button class='btn btn-danger btn-sm delete-admin' onclick='onDelete(" . $row['id'] . ")'><i class='fas fa-trash'></i></button>";
+                                echo "</td>";
+                                echo "</tr>";
+                            }
+                            ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Footer -->

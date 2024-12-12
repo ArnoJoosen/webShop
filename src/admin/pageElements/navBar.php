@@ -28,7 +28,7 @@
                     if (isset($_SESSION["admin_loggedin"]) && $_SESSION["admin_loggedin"] === true) { ?>
                         <div class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <?php echo $_SESSION["admin_first_name"] . " " . $_SESSION["admin_last_name"]; ?>
+                                <?php echo $_SESSION["admin_username"]; ?>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                                 <li><a class="dropdown-item" href="./logout.php">Logout</a></li>
