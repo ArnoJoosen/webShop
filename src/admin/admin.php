@@ -112,9 +112,9 @@
                                 $stockResult = $conn->query($stockQuery);
                                 $stockCount = $stockResult->fetch_assoc()['count'];
                             ?>
-                            <li class="list-group-item">Registered Users: <span class="fw-bold text-primary"><?php echo $userCount; ?></span></li>
-                            <li class="list-group-item">Pending Orders: <span class="fw-bold text-primary"><?php echo $orderCount; ?></span></li>
-                            <li class="list-group-item">Out of Stock Items: <span class="fw-bold text-primary"><?php echo $stockCount; ?></span></li>
+                            <li class="list-group-item">Registered Users: <span class="fw-bold text-primary"><?php echo htmlspecialchars($userCount); ?></span></li>
+                            <li class="list-group-item">Pending Orders: <span class="fw-bold text-primary"><?php echo htmlspecialchars($orderCount); ?></span></li>
+                            <li class="list-group-item">Out of Stock Items: <span class="fw-bold text-primary"><?php echo htmlspecialchars($stockCount); ?></span></li>
                         </ul>
                     </div>
                 </div>

@@ -138,7 +138,7 @@ class ShoppingCart {
                     <tr>
                         <td> <?php echo htmlspecialchars($row['name']); ?> </td>
                         <td> <?php echo number_format($row['price'], 2); ?> € </td>
-                        <td> <?php echo $row['quantity']; ?> </td>
+                        <td> <?php echo htmlspecialchars($row['quantity']); ?> </td>
                         <td> <?php echo number_format($row_total, 2); ?> € </td>
                     </tr>
                 <?php
@@ -146,7 +146,7 @@ class ShoppingCart {
                 ?>
                 <tr>
                     <td colspan="3" class="text-end"><strong>Total</strong></td>
-                    <td><strong> <?php echo number_format($total, 2); ?> € </strong></td>
+                    <td><strong> <?php echo htmlspecialchars(number_format($total, 2)); ?> € </strong></td>
                 </tr>
             </tbody>
             </table>
@@ -185,7 +185,7 @@ class ShoppingCart {
                     <tr>
                         <td> <?php echo htmlspecialchars($row['name']); ?> </td>
                         <td> <?php echo number_format($row['price'], 2); ?> € </td>
-                        <td> <?php echo $row['quantity']; ?> </td>
+                        <td> <?php echo htmlspecialchars($row['quantity']); ?> </td>
                         <td> <?php echo number_format($row_total, 2); ?> € </td>
                         <td>
                             <button class="btn p-0 border-0 me-2" onclick="onDecrementClick(<?php echo $row['id']; ?>, '<?php echo htmlspecialchars($row['name']); ?>')">
