@@ -188,24 +188,15 @@ class ShoppingCart {
                         <td> <?php echo $row['quantity']; ?> </td>
                         <td> <?php echo number_format($row_total, 2); ?> € </td>
                         <td>
-                            <form class="action-icons d-inline me-2" method="post" action="shoppingCart.php" onsubmit="history.replaceState(null, null, document.referrer)">
-                                <input type="hidden" name="action" value="decrement">
-                                <input type="hidden" name="product_id" value="<?php echo $row["id"]; ?>">
-                                <input type="hidden" name="name" value="<?php echo $row["name"]; ?>">
-                                <button type="submit" class="btn p-0 border-0"><i class="fas fa-minus"></i></button>
-                            </form>
-                            <form class="action-icons d-inline me-2" method="post" action="shoppingCart.php" onsubmit="history.replaceState(null, null, document.referrer)">
-                                <input type="hidden" name="action" value="increment">
-                                <input type="hidden" name="product_id" value="<?php echo $row["id"]; ?>">
-                                <input type="hidden" name="name" value="<?php echo $row["name"]; ?>">
-                                <button type="submit" class="btn p-0 border-0"><i class="fas fa-plus"></i></button>
-                            </form>
-                            <form class="action-icons d-inline" method="post" action="shoppingCart.php" onsubmit="history.replaceState(null, null, document.referrer)">
-                                <input type="hidden" name="action" value="remove">
-                                <input type="hidden" name="product_id" value="<?php echo $row["id"]; ?>">
-                                <input type="hidden" name="name" value="<?php echo $row["name"]; ?>">
-                                <button type="submit" class="btn p-0 border-0"><i class="fas fa-trash-alt"></i></button>
-                            </form>
+                            <button class="btn p-0 border-0 me-2" onclick="onDecrementClick(<?php echo $row['id']; ?>, '<?php echo htmlspecialchars($row['name']); ?>')">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <button class="btn p-0 border-0 me-2" onclick="onIncrementClick(<?php echo $row['id']; ?>, '<?php echo htmlspecialchars($row['name']); ?>')">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button class="btn p-0 border-0" onclick="onRemoveClick(<?php echo $row['id']; ?>, '<?php echo htmlspecialchars($row['name']); ?>')">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
                         </td>
                     </tr>
                 <?php
