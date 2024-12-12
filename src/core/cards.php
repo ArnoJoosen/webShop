@@ -5,17 +5,16 @@ function renderCategoryCard($name, $url, $imageId = null)
     $imageUrl = $imageId
         ? "https://picsum.photos/id/{$imageId}/300/200"
         : "https://picsum.photos/300/200"; ?>
-    <a class="card text-decoration-none" style="width: 18rem;" href="<?php echo $url?>">
-        <img src="<?php echo $imageUrl; ?>" class="card-img-top" alt="<?php echo htmlspecialchars($name); ?>">
-        <div class="card-body">
-            <h5 class="card-title"><?php echo htmlspecialchars($name); ?></h5>
+        <div class="card text-decoration-none" style="width: 18rem;" onclick="onCategoryClick('<?php echo $url?>')">
+            <img src="<?php echo $imageUrl; ?>" class="card-img-top" alt="<?php echo htmlspecialchars($name); ?>">
+            <div class="card-body">
+                <h5 class="card-title"><?php echo htmlspecialchars($name); ?></h5>
+            </div>
         </div>
-    </a>
     <?php
 }
 
-function renderProductCard($name, $description, $price, $productId, $imageId = null)
-{
+function renderProductCard($name, $description, $price, $productId, $imageId = null) {
     $imageUrl = $imageId
         ? "https://picsum.photos/id/{$imageId}/300/200"
         : "https://picsum.photos/300/200";
