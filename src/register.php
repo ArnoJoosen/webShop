@@ -14,87 +14,85 @@
     <?php include "core/pageElements/navBar.php"; ?>
 
     <!-- Main content -->
-    <rewrite_this>
-        <div class="container mt-4 ">
-        <?php if ($_SERVER["REQUEST_METHOD"] == "POST") {
-            $dbservername = "db";
-            $dbusername = "webuser"; // TOD change to env variable (security risk)
-            $dbpassword = "webpassword"; // TOD change to env variable (security risk)
-            $database = "webshop";
-            $conn = new mysqli(
-                $dbservername,
-                $dbusername,
-                $dbpassword,
-                $database
-            );
+    <div class="container mt-4 ">
+    <?php if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        $dbservername = "db";
+        $dbusername = "webuser"; // TOD change to env variable (security risk)
+        $dbpassword = "webpassword"; // TOD change to env variable (security risk)
+        $database = "webshop";
+        $conn = new mysqli(
+            $dbservername,
+            $dbusername,
+            $dbpassword,
+            $database
+        );
 
-            $first_name = $_POST["first_name"]; // TODO check if the input is valid
-            $last_name = $_POST["last_name"]; // TODO check if the input is valid
-            $email = $_POST["email"]; // TODO check if the input is valid
-            $password = $_POST["password"]; // TODO check if the input is valid
-            $date_of_birth = $_POST["date_of_birth"]; // TODO check if the input is valid
-            $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+        $first_name = $_POST["first_name"]; // TODO check if the input is valid
+        $last_name = $_POST["last_name"]; // TODO check if the input is valid
+        $email = $_POST["email"]; // TODO check if the input is valid
+        $password = $_POST["password"]; // TODO check if the input is valid
+        $date_of_birth = $_POST["date_of_birth"]; // TODO check if the input is valid
+        $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
-            // Prepare and bind
-            $stmt = $conn->prepare(
-                "INSERT INTO Customer (first_name, last_name, email, passwordhash, date_of_birth) VALUES (?, ?, ?, ?, ?)"
-            );
-            $stmt->bind_param(
-                "sssss",
-                $first_name,
-                $last_name,
-                $email,
-                $passwordHash,
-                $date_of_birth
-            );
+        // Prepare and bind
+        $stmt = $conn->prepare(
+            "INSERT INTO Customer (first_name, last_name, email, passwordhash, date_of_birth) VALUES (?, ?, ?, ?, ?)"
+        );
+        $stmt->bind_param(
+            "sssss",
+            $first_name,
+            $last_name,
+            $email,
+            $passwordHash,
+            $date_of_birth
+        );
 
-            // Execute the statement
-            if ($stmt->execute() === true) {
-                echo '<div class="alert alert-success" role="alert">User registered successfully</div>'; // TODO change to redirect to login page after 3 seconds
-            } else {
-                echo '<div class="alert alert-danger" role="alert">Error: ' .
-                    $stmt->error .
-                    "</div>"; // TODO remove error message in production change to generic error message
-            }
-
-            // Close the statement
-            $stmt->close();
-            $conn->close();
+        // Execute the statement
+        if ($stmt->execute() === true) {
+            echo '<div class="alert alert-success" role="alert">User registered successfully</div>'; // TODO change to redirect to login page after 3 seconds
         } else {
-             ?>
-            <div class="row justify-content-center">
-                <div class="col-md-6 p-5 mb-4 rounded-3 border border-2">
-                    <h1>Register</h1>
-                    <!-- novalidation necessary because bootstrap already validates the form -->
-                    <form action="register.php" method="post">
-                        <div class="mb-3">
-                            <label for="first_name" class="form-label">First Name</label>
-                            <input type="text" class="form-control" id="first_name" name="first_name" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="last_name" class="form-label">Last Name</label>
-                            <input type="text" class="form-control" id="last_name" name="last_name" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="date_of_birth" class="form-label">Date of Birth</label>
-                            <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Register</button>
-                    </form>
-                </div>
+            echo '<div class="alert alert-danger" role="alert">Error: ' .
+                $stmt->error .
+                "</div>"; // TODO remove error message in production change to generic error message
+        }
+
+        // Close the statement
+        $stmt->close();
+        $conn->close();
+    } else {
+         ?>
+        <div class="row justify-content-center">
+            <div class="col-md-6 p-5 mb-4 rounded-3 border border-2">
+                <h1>Register</h1>
+                <!-- novalidation necessary because bootstrap already validates the form -->
+                <form action="register.php" method="post">
+                    <div class="mb-3">
+                        <label for="first_name" class="form-label">First Name</label>
+                        <input type="text" class="form-control" id="first_name" name="first_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="last_name" class="form-label">Last Name</label>
+                        <input type="text" class="form-control" id="last_name" name="last_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="date_of_birth" class="form-label">Date of Birth</label>
+                        <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Register</button>
+                </form>
             </div>
-        <?php
-        } ?>
         </div>
-    </rewrite_this>
+    <?php
+    } ?>
+    </div>
 
     <!-- Footer -->
     <footer class="footer mt-auto py-3 theme">
