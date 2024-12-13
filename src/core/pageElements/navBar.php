@@ -8,10 +8,10 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link" href="products.php">Products</a>
+                    <a class="nav-link" href="/products.php">Products</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Coontact</a>
+                    <a class="nav-link" href="/conntact.php">Coontact</a>
                 </li>
             </ul>
             <form class="d-flex justify-content-center mx-auto" style="width: 60%;">
@@ -35,9 +35,9 @@
                     ) { ?>
                         <div class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <?php echo $_SESSION["first_name"] .
+                                <?php echo htmlspecialchars($_SESSION["first_name"]) .
                                     " " .
-                                    $_SESSION["last_name"]; ?>
+                                    htmlspecialchars($_SESSION["last_name"]); ?>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                                 <li><a class="dropdown-item" href="./shoppingCart.php">Shopping Card</a></li>

@@ -14,13 +14,13 @@ if (
 ) {
     if ($_POST["action"] == "remove") {
         $cart->removeItem($_POST["product_id"]);
-        echo "<h2>" . $_POST["name"] . " Removed from Cart</h2>";
+        echo "<h2>" . htmlspecialchars($_POST["name"]) . " Removed from Cart</h2>";
     } elseif ($_POST["action"] == "decrement") {
         $cart->decrementItem($_POST["product_id"]);
-        echo "<h2>One " . $_POST["name"] . " Removed from Cart</h2>";
+        echo "<h2>One " . htmlspecialchars($_POST["name"]) . " Removed from Cart</h2>";
     } elseif ($_POST["action"] == "increment") {
         $cart->incrementItem($_POST["product_id"]);
-        echo "<h2>One " . $_POST["name"] . " Added to Cart</h2>";
+        echo "<h2>One " . htmlspecialchars($_POST["name"]) . " Added to Cart</h2>";
     }
     $cart->displayCartEditor();
 } else {

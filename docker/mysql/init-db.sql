@@ -14,8 +14,23 @@ DROP TABLE IF EXISTS Categorys;
 DROP TABLE IF EXISTS Category;
 DROP TABLE IF EXISTS Address;
 DROP TABLE IF EXISTS Customer;
+DROP TABLE IF EXISTS Admins;
 
 /* Create tables */
+
+CREATE TABLE Admins (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) UNIQUE NOT NULL,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    role ENUM('superAdmin', 'admin') NOT NULL,
+    passwordhash VARCHAR(100) NOT NULL
+);
+
+/* inserting super admin*/
+INSERT INTO Admins (username, first_name, last_name, role, passwordhash)
+        VALUES ('SAdmin', '', '', 'superAdmin', "$2y$10$F5/0OrChMOsrK22InclUkeEG598PK8ex5s11GIne1yuvo8ThrxqEy");
+
 CREATE TABLE Customer (
     id INT AUTO_INCREMENT PRIMARY KEY,
     first_name VARCHAR(100) NOT NULL,
@@ -24,6 +39,10 @@ CREATE TABLE Customer (
     `date_of_birth` DATE,
     passwordhash VARCHAR(100) NOT NULL
 );
+
+/* inserting test customer white password 'password' */
+INSERT INTO Customer (first_name, last_name, email, date_of_birth, passwordhash)
+        VALUES ('Test', 'Customer', 'test@example.com', '1990-01-01', '$2y$10$Mrov9SOPMYt9hREjnwkHau/tgTJ.EaOMcm6tWW9ZvIA00QJetMXAS');
 
 CREATE TABLE Address (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -142,28 +161,28 @@ INSERT INTO Category (name, imagePath) VALUES ('Business Laptops', 'businesslapt
 INSERT INTO Categorys (main_category_id, sub_category_id, level) VALUES ((SELECT id FROM Category WHERE name = 'Laptops'), (SELECT id FROM Category WHERE name = 'Business Laptops'), 2);
 
 /* Inserting data in sub categories */
-INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('Alienware M15', 1499.99, 'Alienware M15 gaming laptop with Intel Core i7, 16GB RAM and 512GB SSD.', 'Dell', 5, 'alienwarem15.jpg', 1, (SELECT id FROM Category WHERE name = 'Gaming Laptops'));
-INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('Dell XPS 13', 1199.99, 'Dell XPS 13 business laptop with Intel Core i5, 8GB RAM and 256GB SSD.', 'Dell', 10, 'dellxps13.jpg', 1, (SELECT id FROM Category WHERE name = 'Business Laptops'));
-INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('iPhone 12 Pro', 999.99, 'The new iPhone 12 Pro with 256GB storage and LiDAR scanner.', 'Apple', 15, 'iphone12pro.jpg', 1, (SELECT id FROM Category WHERE name = 'Smartphones'));
-INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('Samsung Galaxy S21', 899.99, 'The new Samsung Galaxy S21 with 128GB storage and 5G support.', 'Samsung', 20, 'galaxys21.jpg', 1, (SELECT id FROM Category WHERE name = 'Smartphones'));
+INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('Alienware M15', 1499.99, 'Alienware M15 gaming laptop with Intel Core i7, 16GB RAM and 512GB SSD.', 'Dell', 5, '/resources/example_products/Alienware-M15.jpg', 1, (SELECT id FROM Category WHERE name = 'Gaming Laptops'));
+INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('Dell XPS 13', 1199.99, 'Dell XPS 13 business laptop with Intel Core i5, 8GB RAM and 256GB SSD.', 'Dell', 10, '/resources/example_products/Dell_XPS_13.jpeg', 1, (SELECT id FROM Category WHERE name = 'Business Laptops'));
+INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('iPhone 12 Pro', 999.99, 'The new iPhone 12 Pro with 256GB storage and LiDAR scanner.', 'Apple', 15, '/resources/example_products/iPhone_12_Pro.jpg', 1, (SELECT id FROM Category WHERE name = 'Smartphones'));
+INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('Samsung Galaxy S21', 899.99, 'The new Samsung Galaxy S21 with 128GB storage and 5G support.', 'Samsung', 20, '/resources/example_products/Samsung_Galaxy_S21.jpg', 1, (SELECT id FROM Category WHERE name = 'Smartphones'));
 
 /* Inserting data products */
-INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('Macbook Pro', 1299.99, 'The new Macbook Pro with M1 chip, 8GB RAM and 256GB SSD.', 'Apple', 10, 'macbookpro.jpg', 1, (SELECT id FROM Category WHERE name = 'Laptops'));
-INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('iPhone 12', 799.99, 'The new iPhone 12 with 128GB storage and 5G support.', 'Apple', 20, 'iphone12.jpg', 1, (SELECT id FROM Category WHERE name = 'Smartphones'));
-INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('iPad Pro', 999.99, 'The new iPad Pro with 11-inch display, 128GB storage and Apple Pencil support.', 'Apple', 15, 'ipadpro.jpg', 1, (SELECT id FROM Category WHERE name = 'Tablets'));
-INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('AirPods Pro', 249.99, 'The new AirPods Pro with active noise cancellation and transparency mode.', 'Apple', 30, 'airpodspro.jpg', 1, (SELECT id FROM Category WHERE name = 'Headphones'));
-INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('White T-Shirt', 19.99, 'A white T-Shirt made of 100% cotton.', 'Generic', 50, 'whitetshirt.jpg', 1, (SELECT id FROM Category WHERE name = 'T-Shirts'));
-INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('Blue Jeans', 39.99, 'Blue jeans made of 98% cotton and 2% elastane.', 'Generic', 40, 'bluejeans.jpg', 1, (SELECT id FROM Category WHERE name = 'Jeans'));
-INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('Grey Sweater', 29.99, 'A grey sweater made of 100% wool.', 'Generic', 35, 'greysweater.jpg', 1, (SELECT id FROM Category WHERE name = 'Sweaters'));
-INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('Black Hoodie', 49.99, 'A black hoodie made of 80% cotton and 20% polyester.', 'Generic', 45, 'blackhoodie.jpg', 1, (SELECT id FROM Category WHERE name = 'Hoodies'));
-INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('The Hobbit', 9.99, 'The Hobbit by J.R.R. Tolkien.', 'HarperCollins', 60, 'thehobbit.jpg', 1, (SELECT id FROM Category WHERE name = 'Fantasy'));
-INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('Dune', 14.99, 'Dune by Frank Herbert.', 'Chilton Books', 55, 'dune.jpg', 1, (SELECT id FROM Category WHERE name = 'Science Fiction'));
-INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('Pride and Prejudice', 7.99, 'Pride and Prejudice by Jane Austen.', 'T. Egerton', 65, 'prideandprejudice.jpg', 1, (SELECT id FROM Category WHERE name = 'Romance'));
-INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('Gardening for Dummies', 19.99, 'Gardening for Dummies by Sue Fisher.', 'For Dummies', 70, 'gardeningfordummies.jpg', 1, (SELECT id FROM Category WHERE name = 'Gardening'));
+INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('Macbook Pro', 1299.99, 'The new Macbook Pro with M1 chip, 8GB RAM and 256GB SSD.', 'Apple', 10, '/resources/example_products/Macbook_Pro.jpg', 1, (SELECT id FROM Category WHERE name = 'Laptops'));
+INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('iPhone 12', 799.99, 'The new iPhone 12 with 128GB storage and 5G support.', 'Apple', 20, '/resources/example_products/iPhone_12.jpg', 1, (SELECT id FROM Category WHERE name = 'Smartphones'));
+INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('iPad Pro', 999.99, 'The new iPad Pro with 11-inch display, 128GB storage and Apple Pencil support.', 'Apple', 15, '/resources/example_products/iPad_Pro.jpeg', 1, (SELECT id FROM Category WHERE name = 'Tablets'));
+INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('AirPods Pro', 249.99, 'The new AirPods Pro with active noise cancellation and transparency mode.', 'Apple', 30, '/resources/example_products/AirPods_Pro.jpg', 1, (SELECT id FROM Category WHERE name = 'Headphones'));
+INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('White T-Shirt', 19.99, 'A white T-Shirt made of 100% cotton.', 'Generic', 50, '/resources/example_products/White_T-Shirt.jpg', 1, (SELECT id FROM Category WHERE name = 'T-Shirts'));
+INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('Blue Jeans', 39.99, 'Blue jeans made of 98% cotton and 2% elastane.', 'Generic', 40, '/resources/example_products/Blue_Jeans.jpg', 1, (SELECT id FROM Category WHERE name = 'Jeans'));
+INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('Grey Sweater', 29.99, 'A grey sweater made of 100% wool.', 'Generic', 35, '/resources/example_products/Grey_Sweater.jpg', 1, (SELECT id FROM Category WHERE name = 'Sweaters'));
+INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('Black Hoodie', 49.99, 'A black hoodie made of 80% cotton and 20% polyester.', 'Generic', 45, '/resources/example_products/Black_Hoodie.jpg', 1, (SELECT id FROM Category WHERE name = 'Hoodies'));
+INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('The Hobbit', 9.99, 'The Hobbit by J.R.R. Tolkien.', 'HarperCollins', 60, '/resources/example_products/The_Hobbit.jpg', 1, (SELECT id FROM Category WHERE name = 'Fantasy'));
+INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('Dune', 14.99, 'Dune by Frank Herbert.', 'Chilton Books', 55, '/resources/example_products/Dune.jpg', 1, (SELECT id FROM Category WHERE name = 'Science Fiction'));
+INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('Pride and Prejudice', 7.99, 'Pride and Prejudice by Jane Austen.', 'T. Egerton', 65, '/resources/example_products/Pride_and_Prejudice.jpg', 1, (SELECT id FROM Category WHERE name = 'Romance'));
+INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('Gardening for Dummies', 19.99, 'Gardening for Dummies by Sue Fisher.', 'For Dummies', 70, '/resources/example_products/Gardening_for_Dummies.jpg', 1, (SELECT id FROM Category WHERE name = 'Gardening'));
 
 /* Inserting reviews */
-INSERT INTO Review (rating, comment, product_id) VALUES (5, 'Great laptop, very fast and reliable.', (SELECT id FROM Product WHERE name = 'Macbook Pro'));
-INSERT INTO Review (rating, comment, product_id) VALUES (4, 'Good phone, but battery life could be better.', (SELECT id FROM Product WHERE name = 'iPhone 12'));
-INSERT INTO Review (rating, comment, product_id) VALUES (5, 'Excellent tablet, very fast and great display.', (SELECT id FROM Product WHERE name = 'iPad Pro'));
-INSERT INTO Review (rating, comment, product_id) VALUES (5, 'Best headphones I ever had, sound quality is amazing.', (SELECT id FROM Product WHERE name = 'AirPods Pro'));
-INSERT INTO Review (rating, comment, product_id) VALUES (4, 'Nice T-Shirt, but a bit expensive.', (SELECT id FROM Product WHERE name = 'White T-Shirt'));
+INSERT INTO Review (rating, comment, product_id, customer_id) VALUES (5, 'Great laptop, very fast and reliable.', (SELECT id FROM Product WHERE name = 'Macbook Pro'), (SELECT id FROM Customer WHERE email = 'test@example.com'));
+INSERT INTO Review (rating, comment, product_id, customer_id) VALUES (4, 'Good phone, but battery life could be better.', (SELECT id FROM Product WHERE name = 'iPhone 12'), (SELECT id FROM Customer WHERE email = 'test@example.com'));
+INSERT INTO Review (rating, comment, product_id, customer_id) VALUES (5, 'Excellent tablet, very fast and great display.', (SELECT id FROM Product WHERE name = 'iPad Pro'), (SELECT id FROM Customer WHERE email = 'test@example.com'));
+INSERT INTO Review (rating, comment, product_id, customer_id) VALUES (5, 'Best headphones I ever had, sound quality is amazing.', (SELECT id FROM Product WHERE name = 'AirPods Pro'), (SELECT id FROM Customer WHERE email = 'test@example.com'));
+INSERT INTO Review (rating, comment, product_id, customer_id) VALUES (4, 'Nice T-Shirt, but a bit expensive.', (SELECT id FROM Product WHERE name = 'White T-Shirt'), (SELECT id FROM Customer WHERE email = 'test@example.com'));
