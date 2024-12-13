@@ -100,135 +100,102 @@
         die("Connection failed: " . $conn->connect_error); // TODO: remove (security risk)
     }
 
-    // ajax request to add product
-    if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"]) && $_POST["action"] == "add") {
-        if(isset($_POST['name']) && isset($_POST['price']) && isset($_POST['description']) &&
-           isset($_POST['manufacturer']) && isset($_POST['stock']) && isset($_POST['category_id']) &&
-           isset($_FILES['image'])) {
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        header('Content-Type: application/json');
 
-            $targetDir = "/uploads/products/";
-            $fileName = basename($_FILES["image"]["name"]);
-            $targetFilePath = $targetDir . time() . '_' . $fileName;
-            $fileType = pathinfo($targetFilePath, PATHINFO_EXTENSION);
+        if (isset($_POST["action"])) {
+            switch($_POST["action"]) {
+                case "add":
+                    if(isset($_POST['name']) && isset($_POST['price']) && isset($_POST['description']) &&
+                       isset($_POST['manufacturer']) && isset($_POST['stock']) && isset($_POST['category_id']) &&
+                       isset($_FILES['image'])) {
 
-            // Check if folder exists
-            if (!is_dir($_SERVER['DOCUMENT_ROOT'] . $targetDir)) {
-                header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'error' => 'Upload directory does not exist']);
-                exit;
-            }
+                        $targetDir = "/uploads/products/";
+                        $fileName = basename($_FILES["image"]["name"]);
+                        $targetFilePath = $targetDir . time() . '_' . $fileName;
+                        $fileType = pathinfo($targetFilePath, PATHINFO_EXTENSION);
 
-            // Allow certain file formats
-            $allowTypes = array('jpg', 'jpeg', 'png', 'gif');
-            if(in_array(strtolower($fileType), $allowTypes)) {
-                if(move_uploaded_file($_FILES["image"]["tmp_name"], $_SERVER['DOCUMENT_ROOT'] . $targetFilePath)) {
-                    $stmt = $conn->prepare("INSERT INTO Product (name, description, price, manufacturer, stock, category_id, available, imagePath) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                        if (!is_dir($_SERVER['DOCUMENT_ROOT'] . $targetDir)) {
+                            echo json_encode(['success' => false, 'error' => 'Upload directory does not exist']);
+                            exit;
+                        }
 
-                    $name = $_POST['name'];
-                    $description = $_POST['description'];
-                    $price = $_POST['price'];
-                    $manufacturer = $_POST['manufacturer'];
-                    $stock = $_POST['stock'];
-                    $category_id = $_POST['category_id'];
-                    $available = isset($_POST['available']) ? 1 : 0;
+                        $allowTypes = array('jpg', 'jpeg', 'png', 'gif');
+                        if(in_array(strtolower($fileType), $allowTypes)) {
+                            if(move_uploaded_file($_FILES["image"]["tmp_name"], $_SERVER['DOCUMENT_ROOT'] . $targetFilePath)) {
+                                $stmt = $conn->prepare("INSERT INTO Product (name, description, price, manufacturer, stock, category_id, available, imagePath) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 
-                    $stmt->bind_param("ssdsiiis", $name, $description, $price, $manufacturer, $stock, $category_id, $available, $targetFilePath);
+                                $name = $_POST['name'];
+                                $description = $_POST['description'];
+                                $price = $_POST['price'];
+                                $manufacturer = $_POST['manufacturer'];
+                                $stock = $_POST['stock'];
+                                $category_id = $_POST['category_id'];
+                                $available = isset($_POST['available']) ? 1 : 0;
 
-                    if($stmt->execute()) {
-                        ob_clean(); // Clear any previous output
-                        ob_start(); // start buffering to capture output
-                        displayProducts($conn); // display products in table
-                        $tableContent = ob_get_clean(); // assign output to variable
-                        header('Content-Type: application/json');
-                        echo json_encode(['success' => true, 'tableContent' => $tableContent]);
-                        exit;
+                                $stmt->bind_param("ssdsiiis", $name, $description, $price, $manufacturer, $stock, $category_id, $available, $targetFilePath);
+
+                                if($stmt->execute()) {
+                                    ob_start();
+                                    displayProducts($conn);
+                                    echo json_encode(['success' => true, 'tableContent' => ob_get_clean()]);
+                                } else {
+                                    echo json_encode(['success' => false, 'error' => 'Database error']);
+                                }
+                                $stmt->close();
+                            } else {
+                                echo json_encode(['success' => false, 'error' => 'Failed to upload image']);
+                            }
+                        } else {
+                            echo json_encode(['success' => false, 'error' => 'Invalid file type']);
+                        }
                     } else {
-                        header('Content-Type: application/json');
-                        echo json_encode(['success' => false, 'error' => 'Database error']);
-                        exit;
+                        echo json_encode(['success' => false, 'error' => 'Missing required fields']);
                     }
-                    $stmt->close();
-                } else {
-                    header('Content-Type: application/json');
-                    echo json_encode(['success' => false, 'error' => 'Failed to upload image']);
-                    exit;
-                }
-            } else {
-                header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'error' => 'Invalid file type']);
-                exit;
+                    break;
+
+                case "edit":
+                    if(isset($_POST['id']) && isset($_POST['name']) && isset($_POST['price']) && isset($_POST['description']) &&
+                       isset($_POST['manufacturer']) && isset($_POST['stock']) && isset($_POST['category_id'])) {
+
+                        $stmt = $conn->prepare("UPDATE Product SET name=?, description=?, price=?, manufacturer=?, stock=?, category_id=? WHERE id=?");
+
+                        $stmt->bind_param("ssdsiii", $_POST['name'], $_POST['description'], $_POST['price'],
+                                        $_POST['manufacturer'], $_POST['stock'], $_POST['category_id'], $_POST['id']);
+
+                        if($stmt->execute()) {
+                            ob_start();
+                            displayProducts($conn);
+                            echo json_encode(['success' => true, 'tableContent' => ob_get_clean()]);
+                        } else {
+                            echo json_encode(['success' => false, 'error' => 'Database error']);
+                        }
+                        $stmt->close();
+                    } else {
+                        echo json_encode(['success' => false, 'error' => 'Missing required fields']);
+                    }
+                    break;
+
+                case "toggleAvailability":
+                    if(isset($_POST['id'])) {
+                        $stmt = $conn->prepare("UPDATE Product SET available = !available WHERE id=?");
+                        $stmt->bind_param("i", $_POST['id']);
+
+                        if($stmt->execute()) {
+                            ob_start();
+                            displayProducts($conn);
+                            echo json_encode(['success' => true, 'tableContent' => ob_get_clean()]);
+                        } else {
+                            echo json_encode(['success' => false, 'error' => 'Database error']);
+                        }
+                        $stmt->close();
+                    } else {
+                        echo json_encode(['success' => false, 'error' => 'Missing required fields']);
+                    }
+                    break;
             }
-        } else {
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'error' => 'Missing required fields']);
-            exit;
         }
-    }
-    // ajax request to edit product
-    elseif ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"]) && $_POST["action"] == "edit") {
-        if(isset($_POST['id']) && isset($_POST['name']) && isset($_POST['price']) && isset($_POST['description']) &&
-           isset($_POST['manufacturer']) && isset($_POST['stock']) && isset($_POST['category_id'])) {
-
-            $stmt = $conn->prepare("UPDATE Product SET name=?, description=?, price=?, manufacturer=?, stock=?, category_id=? WHERE id=?");
-
-            $id = $_POST['id'];
-            $name = $_POST['name'];
-            $description = $_POST['description'];
-            $price = $_POST['price'];
-            $manufacturer = $_POST['manufacturer'];
-            $stock = $_POST['stock'];
-            $category_id = $_POST['category_id'];
-
-            $stmt->bind_param("ssdsiii", $name, $description, $price, $manufacturer, $stock, $category_id, $id);
-
-            if($stmt->execute()) {
-                ob_clean(); // Clear any previous output
-                ob_start(); // start buffering to capture output
-                displayProducts($conn); // display products in table
-                $tableContent = ob_get_clean(); // assign output to variable
-                header('Content-Type: application/json');
-                echo json_encode(['success' => true, 'tableContent' => $tableContent]);
-                exit;
-            } else {
-                header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'error' => 'Database error']);
-                exit;
-            }
-            $stmt->close();
-        } else {
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'error' => 'Missing required fields']);
-            exit;
-        }
-    }
-    // ajax request to toggle availability
-    elseif ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"]) && $_POST["action"] == "toggleAvailability") {
-        if(isset($_POST['id'])) {
-            $stmt = $conn->prepare("UPDATE Product SET available = !available WHERE id=?");
-
-            $id = $_POST['id'];
-
-            $stmt->bind_param("i", $id);
-
-            if($stmt->execute()) {
-                ob_clean(); // Clear any previous output
-                ob_start(); // start buffering to capture output
-                displayProducts($conn); // display products in table
-                $tableContent = ob_get_clean(); // assign output to variable
-                header('Content-Type: application/json');
-                echo json_encode(['success' => true, 'tableContent' => $tableContent]);
-                exit;
-            } else {
-                header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'error' => 'Database error']);
-                exit;
-            }
-            $stmt->close();
-        } else {
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'error' => 'Missing required fields']);
-            exit;
-        }
+        exit;
     }
 ?>
 <!DOCTYPE html>
