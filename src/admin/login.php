@@ -57,12 +57,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['username']) && isset($
                         <h1 class="text-center mb-0">Admin</h1>
                     </div>
                     <div class="card-body">
+                        <!-- novalidation necessary because bootstrap already validates the form -->
                         <form action="" method="post">
                             <div class="mb-3">
-                                <input type="text" class="form-control" name="username" placeholder="Username">
+                                <input type="text" class="form-control" name="username" placeholder="Username" required>
                             </div>
                             <div class="mb-3">
-                                <input type="password" class="form-control" name="password" placeholder="Password">
+                                <input type="password" class="form-control" name="password" placeholder="Password" required>
                             </div>
                             <div class="d-grid">
                                 <input type="submit" class="btn btn-primary" value="Login">

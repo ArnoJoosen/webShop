@@ -14,6 +14,9 @@
                     <a class="nav-link" href="products.php">Products</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="orders.php">Orders</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="users.php">Users</a>
                 </li>
                 <?php if ($_SESSION['admin_role'] === 'superAdmin') { ?>

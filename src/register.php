@@ -65,26 +65,27 @@
             <div class="row justify-content-center">
                 <div class="col-md-6 p-5 mb-4 rounded-3 border border-2">
                     <h1>Register</h1>
+                    <!-- novalidation necessary because bootstrap already validates the form -->
                     <form action="register.php" method="post">
                         <div class="mb-3">
                             <label for="first_name" class="form-label">First Name</label>
-                            <input type="text" class="form-control" id="first_name" name="first_name">
+                            <input type="text" class="form-control" id="first_name" name="first_name" required>
                         </div>
                         <div class="mb-3">
                             <label for="last_name" class="form-label">Last Name</label>
-                            <input type="text" class="form-control" id="last_name" name="last_name">
+                            <input type="text" class="form-control" id="last_name" name="last_name" required>
                         </div>
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email">
+                            <input type="email" class="form-control" id="email" name="email" required>
                         </div>
                         <div class="mb-3">
                             <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" name="password">
+                            <input type="password" class="form-control" id="password" name="password" required>
                         </div>
                         <div class="mb-3">
                             <label for="date_of_birth" class="form-label">Date of Birth</label>
-                            <input type="date" class="form-control" id="date_of_birth" name="date_of_birth">
+                            <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" required>
                         </div>
                         <button type="submit" class="btn btn-primary">Register</button>
                     </form>
