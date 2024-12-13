@@ -9,12 +9,12 @@ $conn = new mysqli($dbservername, $dbusername, $dbpassword, $database);
 
 // check if category is set in url and get all products from category or subcategory
 if (isset($_GET["category"])) {
-    $category = $_GET["category"];
+    $category = intval($_GET["category"]); // Sanitize category input
     // get all products in category and subcategories and all subcategories of subcategories
     $sql = "WITH RECURSIVE CategoryHierarchy AS (
                 SELECT id, name
                 FROM Category
-                WHERE id = $category
+                WHERE id = ?
 
                 UNION ALL
 
@@ -25,17 +25,30 @@ if (isset($_GET["category"])) {
             )
             SELECT DISTINCT p.*, ch.name AS category_name
             FROM Product p
-            INNER JOIN CategoryHierarchy ch ON p.category_id = ch.id;"; // TODO remove SQL injection risk
+            INNER JOIN CategoryHierarchy ch ON p.category_id = ch.id
+            WHERE p.available = true;";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $category);
+    $result = $stmt->execute();
+    $result = $stmt->get_result();
+
 } elseif (isset($_GET["search"]) && $_GET["search"] != "") {
-    $search = $_GET["search"];
+    $search = $conn->real_escape_string($_GET["search"]);
     // get all products that contain search string
-    $sql = "SELECT * FROM Product WHERE name LIKE '%$search%' OR description LIKE '%$search%'";
+    $sql = "SELECT * FROM Product WHERE (name LIKE ? OR description LIKE ?) AND available";
+    $stmt = $conn->prepare($sql);
+    $searchParam = "%$search%";
+    $stmt->bind_param("ss", $searchParam, $searchParam);
+    $result = $stmt->execute();
+    $result = $stmt->get_result();
 }
 else {
     // get all products
-    $sql = "SELECT * FROM Product";
+    $sql = "SELECT * FROM Product WHERE available";
+    $result = $conn->query($sql);
 }
-$result = $conn->query($sql); // TODO split up in pages
+
 if ($result && $result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         renderProductCard(
