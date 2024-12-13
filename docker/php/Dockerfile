@@ -9,6 +9,7 @@ COPY conf.d/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
 RUN echo '#!/bin/sh' > /usr/local/bin/docker-entrypoint.sh && \
     echo 'set -e' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'mkdir -p /var/www/html/uploads/products' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'mkdir -p /var/www/html/uploads/categories' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'chmod -R 775 /var/www/html/uploads' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'chown -R www-data:www-data /var/www/html/uploads' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'exec php-fpm' >> /usr/local/bin/docker-entrypoint.sh && \
