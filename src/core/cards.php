@@ -1,26 +1,7 @@
 <?php
-
-function renderCategoryCard($name, $url, $imageId = null)
-{
-    $imageUrl = $imageId
-        ? "https://picsum.photos/id/{$imageId}/300/200"
-        : "https://picsum.photos/300/200"; ?>
-        <div class="card text-decoration-none" style="width: 18rem;" onclick="onCategoryClick('<?php echo $url?>')">
-            <img src="<?php echo $imageUrl; ?>" class="card-img-top" alt="<?php echo htmlspecialchars($name); ?>">
-            <div class="card-body">
-                <h5 class="card-title"><?php echo htmlspecialchars($name); ?></h5>
-            </div>
-        </div>
-    <?php
-}
-
-function renderProductCard($name, $description, $price, $productId, $imageId = null) {
-    $imageUrl = $imageId
-        ? "https://picsum.photos/id/{$imageId}/300/200"
-        : "https://picsum.photos/300/200";
-        ?>
+function renderProductCard($name, $description, $price, $productId, $imageUrl = null) {?>
     <div class="card" style="width: 18rem;">
-        <img src="<?php echo $imageUrl; ?>" class="card-img-top" alt="<?php echo htmlspecialchars($name); ?>">
+        <img src="<?php echo $imageUrl; ?>" class="card-img-top" alt="<?php echo htmlspecialchars($name); ?>" width="286" height="150" style="object-fit: contain;">
         <div class="card-body">
             <h5 class="card-title"><?php echo htmlspecialchars($name); ?></h5>
             <p class="card-text"><?php echo htmlspecialchars(

@@ -56,7 +56,7 @@ if ($result && $result->num_rows > 0) {
             $row["description"],
             $row["price"],
             $row["id"],
-            564
+            $row["imagePath"]
         );
     }
 } else {
