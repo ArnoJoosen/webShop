@@ -111,6 +111,13 @@
             $targetFilePath = $targetDir . time() . '_' . $fileName;
             $fileType = pathinfo($targetFilePath, PATHINFO_EXTENSION);
 
+            // Check if folder exists
+            if (!is_dir($_SERVER['DOCUMENT_ROOT'] . $targetDir)) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'error' => 'Upload directory does not exist']);
+                exit;
+            }
+
             // Allow certain file formats
             $allowTypes = array('jpg', 'jpeg', 'png', 'gif');
             if(in_array(strtolower($fileType), $allowTypes)) {
