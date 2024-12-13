@@ -1,4 +1,3 @@
-<?php include "core/cards.php"; ?>
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
 <head>

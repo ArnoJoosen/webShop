@@ -40,6 +40,10 @@ CREATE TABLE Customer (
     passwordhash VARCHAR(100) NOT NULL
 );
 
+/* inserting test customer white password 'password' */
+INSERT INTO Customer (first_name, last_name, email, date_of_birth, passwordhash)
+        VALUES ('Test', 'Customer', 'test@example.com', '1990-01-01', '$2y$10$Mrov9SOPMYt9hREjnwkHau/tgTJ.EaOMcm6tWW9ZvIA00QJetMXAS');
+
 CREATE TABLE Address (
     id INT AUTO_INCREMENT PRIMARY KEY,
     street VARCHAR(100),
@@ -177,8 +181,8 @@ INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, a
 INSERT INTO Product (name, price, description, manufacturer, stock, imagePath, available, category_id) VALUES ('Gardening for Dummies', 19.99, 'Gardening for Dummies by Sue Fisher.', 'For Dummies', 70, '/resources/example_products/Gardening_for_Dummies.jpg', 1, (SELECT id FROM Category WHERE name = 'Gardening'));
 
 /* Inserting reviews */
-INSERT INTO Review (rating, comment, product_id) VALUES (5, 'Great laptop, very fast and reliable.', (SELECT id FROM Product WHERE name = 'Macbook Pro'));
-INSERT INTO Review (rating, comment, product_id) VALUES (4, 'Good phone, but battery life could be better.', (SELECT id FROM Product WHERE name = 'iPhone 12'));
-INSERT INTO Review (rating, comment, product_id) VALUES (5, 'Excellent tablet, very fast and great display.', (SELECT id FROM Product WHERE name = 'iPad Pro'));
-INSERT INTO Review (rating, comment, product_id) VALUES (5, 'Best headphones I ever had, sound quality is amazing.', (SELECT id FROM Product WHERE name = 'AirPods Pro'));
-INSERT INTO Review (rating, comment, product_id) VALUES (4, 'Nice T-Shirt, but a bit expensive.', (SELECT id FROM Product WHERE name = 'White T-Shirt'));
+INSERT INTO Review (rating, comment, product_id, customer_id) VALUES (5, 'Great laptop, very fast and reliable.', (SELECT id FROM Product WHERE name = 'Macbook Pro'), (SELECT id FROM Customer WHERE email = 'test@example.com'));
+INSERT INTO Review (rating, comment, product_id, customer_id) VALUES (4, 'Good phone, but battery life could be better.', (SELECT id FROM Product WHERE name = 'iPhone 12'), (SELECT id FROM Customer WHERE email = 'test@example.com'));
+INSERT INTO Review (rating, comment, product_id, customer_id) VALUES (5, 'Excellent tablet, very fast and great display.', (SELECT id FROM Product WHERE name = 'iPad Pro'), (SELECT id FROM Customer WHERE email = 'test@example.com'));
+INSERT INTO Review (rating, comment, product_id, customer_id) VALUES (5, 'Best headphones I ever had, sound quality is amazing.', (SELECT id FROM Product WHERE name = 'AirPods Pro'), (SELECT id FROM Customer WHERE email = 'test@example.com'));
+INSERT INTO Review (rating, comment, product_id, customer_id) VALUES (4, 'Nice T-Shirt, but a bit expensive.', (SELECT id FROM Product WHERE name = 'White T-Shirt'), (SELECT id FROM Customer WHERE email = 'test@example.com'));
