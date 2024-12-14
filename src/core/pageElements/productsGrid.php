@@ -58,12 +58,16 @@ if ($result && $result->num_rows > 0) {
                 <h5 class="card-title"><?php echo htmlspecialchars($row["name"]); ?></h5>
                 <p class="card-text"><?php echo htmlspecialchars($row["description"]); ?></p>
                 <p class="card-text"><strong>Price: <?php echo number_format($row["price"], 2); ?>€</strong></p>
+                <?php if ($row["stock"] > 0): ?>
                 <form method="post" action="shoppingCart.php">
                     <input type="hidden" name="action" value="add">
                     <input type="hidden" name="product_id" value="<?php echo htmlspecialchars($row["id"]); ?>">
                     <input type="hidden" name="name" value="<?php echo htmlspecialchars($row["name"]); ?>">
                     <button type="submit" class="btn btn-primary">Add to Cart</button>
                 </form>
+                <?php else: ?>
+                <button class="btn btn-secondary" disabled> Out of Stock </button>
+                <?php endif; ?>
             </div>
         </div>
         <?php

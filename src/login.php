@@ -15,9 +15,12 @@
     <?php include "core/pageElements/navBar.php"; ?>
 
     <!-- Main content -->
-<?php if ($_SERVER["REQUEST_METHOD"] == "POST") {
+<?php if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["email"]) && isset($_POST["password"])) {
     require_once $_SERVER['DOCUMENT_ROOT'] . '/core/config.php';
     $conn = connectToDatabase();
+
+    $email = $_POST["email"];
+    $password = $_POST["password"];
 
     // Prepare and bind
     $stmt = $conn->prepare(
