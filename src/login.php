@@ -58,18 +58,18 @@
             //echo '<div class="alert alert-success" role="alert">User logtin successfully</div>';
         } else {
             // Display an error message if password is not valid
-            echo "The password you entered was not valid.";
+            echo "<div class='alert alert-danger' role='alert'>The password or email you entered was not valid.</div>";
         }
     } else {
         // Display an error message if email doesn't exist
-        echo "No account found with that email.";
+        echo "<div class='alert alert-danger' role='alert'>The password or email you entered was not valid.</div>";
     }
 
     // Close statement and connection
     $stmt->close();
     $conn->close();
-} else {
-     ?>
+}
+?>
     <div class="container mt-5 login-container content">
         <div class="p-5 mb-4 rounded-3 border border-2">
             <h2 class="mb-4">Login</h2>
@@ -90,8 +90,6 @@
             </div>
         </div>
     </div>
-    <?php
-} ?>
 
     <!-- Footer -->
     <footer class="footer mt-auto py-3 theme">
