@@ -97,6 +97,8 @@ CREATE TABLE Orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
     customer_id INT,
     order_date DATE,
+    total_price FLOAT,
+    status ENUM('pending', 'shipped', 'delivered', 'cancelled'),
     FOREIGN KEY (customer_id) REFERENCES Customer(id)
 );
 

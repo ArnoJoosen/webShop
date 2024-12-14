@@ -219,7 +219,51 @@ class ShoppingCart {
     }
 
     public function checkout() {
-        // TODO implement
+        // get ShoppingCart items for the customer
+        $stmt = $this->conn->prepare("SELECT Product.name, Product.price, ShoppingCart.quantity, Product.id FROM ShoppingCart JOIN Product ON ShoppingCart.product_id = Product.id WHERE ShoppingCart.customer_id = ?");
+        $stmt->bind_param("i", $this->customID);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $stmt->close();
+
+        // create order
+        $this->conn->begin_transaction();
+
+        try {
+            // Calculate total price
+            $total_price = 0;
+            while ($row = $result->fetch_assoc()) {
+                $total_price += $row['price'] * $row['quantity'];
+            }
+
+            // Insert into Orders table
+            $orderStmt = $this->conn->prepare("INSERT INTO Orders (customer_id, order_date, total_price, status) VALUES (?, CURDATE(), ?, 'pending')");
+            $orderStmt->bind_param("id", $this->customID, $total_price);
+            if (!$orderStmt->execute()) {
+                throw new Exception("Error: " . $orderStmt->error);
+            }
+            $order_id = $orderStmt->insert_id;
+            $orderStmt->close();
+
+            // Insert into Order_Product table
+            $result->data_seek(0); // Reset result pointer
+            while ($row = $result->fetch_assoc()) {
+                $orderProductStmt = $this->conn->prepare("INSERT INTO Order_Product (orders_id, product_id, quantity) VALUES (?, ?, ?)");
+                $orderProductStmt->bind_param("iii", $order_id, $row['id'], $row['quantity']);
+                if (!$orderProductStmt->execute()) {
+                    throw new Exception("Error: " . $orderProductStmt->error);
+                }
+                $orderProductStmt->close();
+            }
+
+            // Empty the shopping cart
+            $this->emptyCart();
+
+            $this->conn->commit();
+        } catch (Exception $e) {
+            $this->conn->rollback();
+            die($e->getMessage()); // TODO change to error page (security risk)
+        }
     }
 }
 ?>

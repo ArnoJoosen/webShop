@@ -88,7 +88,7 @@
                                 $userCount = $userResult->fetch_assoc()['count'];
 
                                 // Count pending orders
-                                $orderQuery = "SELECT COUNT(*) as count FROM Orders";
+                                $orderQuery = "SELECT COUNT(*) as count FROM Orders WHERE status = 'pending'";
                                 $orderResult = $conn->query($orderQuery);
                                 $orderCount = $orderResult->fetch_assoc()['count'];
 
