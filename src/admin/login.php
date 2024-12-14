@@ -13,29 +13,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['username']) && isset($
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    $db_servername = "db";
-    $db_username = "webuser"; // TOD change to env variable (security risk)
-    $db_password = "webpassword"; // TOD change to env variable (security risk)
-    $db_database = "webshop";
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/core/config.php';
 
-    // Create connection
-    $conn = new mysqli(
-        $db_servername,
-        $db_username,
-        $db_password,
-        $db_database
-    );
-
-    // Check connection
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error); // TODO: remove (security risk)
-    }
-
+    $conn = connectToDatabase();
     $stmt = $conn->prepare("SELECT * FROM Admins WHERE username = ?");
     $stmt->bind_param("s", $username);
     $stmt->execute();
     $result = $stmt->get_result();
     $admin = $result->fetch_assoc();
+    $stmt->close();
+    $conn->close();
 
     if ($admin && password_verify($password, $admin['passwordhash'])) {
         $_SESSION["admin_loggedin"] = true;
@@ -57,12 +44,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['username']) && isset($
                         <h1 class="text-center mb-0">Admin</h1>
                     </div>
                     <div class="card-body">
+                        <!-- novalidation necessary because bootstrap already validates the form -->
                         <form action="" method="post">
                             <div class="mb-3">
-                                <input type="text" class="form-control" name="username" placeholder="Username">
+                                <input type="text" class="form-control" name="username" placeholder="Username" required>
                             </div>
                             <div class="mb-3">
-                                <input type="password" class="form-control" name="password" placeholder="Password">
+                                <input type="password" class="form-control" name="password" placeholder="Password" required>
                             </div>
                             <div class="d-grid">
                                 <input type="submit" class="btn btn-primary" value="Login">

@@ -8,23 +8,8 @@
 </div>
 <div class="d-flex flex-wrap justify-content-center gap-4">
     <?php
-    $servername = "db";
-    $username = "webuser"; // TOD change to env variable (security risk)
-    $password = "webpassword"; // TOD change to env variable (security risk)
-    $database = "webshop";
-
-    // Create connection
-    $conn = new mysqli(
-        $servername,
-        $username,
-        $password,
-        $database
-    );
-
-    // Check connection
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error); // TODO: remove (security risk)
-    }
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/core/config.php';
+    $conn = connectToDatabase();
 
     // get categorie from url parameter if exists
     if (isset($_GET["category"])) {

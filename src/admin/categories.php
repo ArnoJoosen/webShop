@@ -1,10 +1,13 @@
 <?php
-    function displayCategories($conn) {
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/core/config.php';
+    function displayCategories() {
+        $conn = connectToDatabase();
         $sql = "SELECT c1.id, c1.name, c1.imagePath, c2.name as parent_name
                 FROM Category c1
                 LEFT JOIN Categorys cat ON c1.id = cat.sub_category_id
                 LEFT JOIN Category c2 ON cat.main_category_id = c2.id";
         $result = $conn->query($sql);
+        $conn->close();
 
         while($row = $result->fetch_assoc()) {
             ?><tr>
@@ -31,6 +34,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
+                            <!-- novalidation necessary because bootstrap already validates the form -->
                             <form id="editCategoryForm<?php echo htmlspecialchars($row['id']); ?>" onsubmit="return editCategory(event, <?php echo htmlspecialchars($row['id']); ?>)">
                                 <input type="hidden" name="id" value="<?php echo htmlspecialchars($row['id']); ?>">
                                 <div class="mb-3">
@@ -42,8 +46,13 @@
                                     <select class="form-control" name="parent_category">
                                         <option value="">None (Main Category)</option>
                                         <?php
-                                            $categorySql = "SELECT id, name FROM Category WHERE id != " . $row['id'];
-                                            $categoryResult = $conn->query($categorySql);
+                                            $conn = connectToDatabase();
+                                            $stmt = $conn->prepare("SELECT id, name FROM Category WHERE id != ?");
+                                            $stmt->bind_param("i", $row['id']);
+                                            $stmt->execute();
+                                            $categoryResult = $stmt->get_result();
+                                            $stmt->close();
+                                            $conn->close();
                                             while($category = $categoryResult->fetch_assoc()) {
                                                 echo '<option value="' . htmlspecialchars($category['id']) . '"' .
                                                     ($category['id'] == $row['parent_name'] ? ' selected' : '') . '>' .
@@ -69,18 +78,6 @@
     if (!isset($_SESSION["admin_loggedin"]) && $_SESSION["admin_loggedin"] !== true) {
         header("Location: login.php");
     }
-
-    $servername = "db";
-    $username = "webuser";
-    $password = "webpassword";
-    $database = "webshop";
-
-    $conn = new mysqli($servername, $username, $password, $database);
-
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
-    }
-
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         header('Content-Type: application/json');
 
@@ -100,6 +97,7 @@
                         }
 
                         if(move_uploaded_file($_FILES["image"]["tmp_name"], $_SERVER['DOCUMENT_ROOT'] . $targetFilePath)) {
+                            $conn = connectToDatabase();
                             $stmt = $conn->prepare("INSERT INTO Category (name, imagePath) VALUES (?, ?)");
                             $stmt->bind_param("ss", $_POST['name'], $targetFilePath);
 
@@ -107,9 +105,10 @@
                                 $categoryId = $stmt->insert_id;
 
                                 if(!empty($_POST['parent_category'])) {
-                                    $stmt = $conn->prepare("INSERT INTO Categorys (main_category_id, sub_category_id) VALUES (?, ?)");
-                                    $stmt->bind_param("ii", $_POST['parent_category'], $categoryId);
-                                    $stmt->execute();
+                                    $stmt2 = $conn->prepare("INSERT INTO Categorys (main_category_id, sub_category_id) VALUES (?, ?)");
+                                    $stmt2->bind_param("ii", $_POST['parent_category'], $categoryId);
+                                    $stmt2->execute();
+                                    $stmt2->close();
                                 }
 
                                 ob_start();
@@ -118,6 +117,8 @@
                             } else {
                                 echo json_encode(['success' => false, 'error' => 'Database error']);
                             }
+                            $stmt->close();
+                            $conn->close();
                         } else {
                             echo json_encode(['success' => false, 'error' => 'Failed to upload image']);
                         }
@@ -134,9 +135,11 @@
                             $targetFilePath = $targetDir . $fileName;
                             move_uploaded_file($_FILES["image"]["tmp_name"], $_SERVER['DOCUMENT_ROOT'] . $targetFilePath);
 
+                            $conn = connectToDatabase();
                             $stmt = $conn->prepare("UPDATE Category SET name = ?, imagePath = ? WHERE id = ?");
                             $stmt->bind_param("ssi", $_POST['name'], $targetFilePath, $_POST['id']);
                         } else {
+                            $conn = connectToDatabase();
                             $stmt = $conn->prepare("UPDATE Category SET name = ? WHERE id = ?");
                             $stmt->bind_param("si", $_POST['name'], $_POST['id']);
                         }
@@ -149,22 +152,26 @@
                             }
 
                             ob_start();
-                            displayCategories($conn);
+                            displayCategories();
                             echo json_encode(['success' => true, 'content' => ob_get_clean()]);
                         } else {
                             echo json_encode(['success' => false, 'error' => 'Database error']);
                         }
+                        $stmt->close();
+                        $conn->close();
                     }
                     break;
 
                 case "delete":
                     if(isset($_POST['id'])) {
                         // Check for dependent products
+                        $conn = connectToDatabase();
                         $stmt = $conn->prepare("SELECT COUNT(*) as count FROM Product WHERE category_id = ?");
                         $stmt->bind_param("i", $_POST['id']);
                         $stmt->execute();
                         $result = $stmt->get_result();
                         $row = $result->fetch_assoc();
+                        $stmt->close();
 
                         if($row['count'] > 0) {
                             echo json_encode(['success' => false, 'error' => 'Cannot delete: Category has products']);
@@ -177,6 +184,7 @@
                         $stmt->execute();
                         $result = $stmt->get_result();
                         $row = $result->fetch_assoc();
+                        $stmt->close();
 
                         if($row['count'] > 0) {
                             echo json_encode(['success' => false, 'error' => 'Cannot delete: Category has subcategories']);
@@ -193,6 +201,8 @@
                         } else {
                             echo json_encode(['success' => false, 'error' => 'Database error']);
                         }
+                        $stmt->close();
+                        $conn->close();
                     }
                     break;
             }
@@ -224,6 +234,7 @@
                     <h5 class="mb-0">Add New Category</h5>
                 </div>
                 <div class="card-body">
+                    <!-- novalidation necessary because bootstrap already validates the form -->
                     <form onsubmit="return addCategory(event)" enctype="multipart/form-data" class="mb-4">
                         <div class="row mb-3">
                             <div class="col-md-6">
@@ -235,8 +246,10 @@
                                 <select class="form-control" id="parent_category" name="parent_category">
                                     <option value="">None (Main Category)</option>
                                     <?php
+                                        $conn = connectToDatabase();
                                         $sql = "SELECT id, name FROM Category";
                                         $result = $conn->query($sql);
+                                        $conn->close();
                                         while($row = $result->fetch_assoc()) {
                                             echo '<option value="' . htmlspecialchars($row['id']) . '">' .
                                                 htmlspecialchars($row['name']) . '</option>';
@@ -271,7 +284,7 @@
                                 </tr>
                             </thead>
                             <tbody id="categoryList">
-                                <?php displayCategories($conn); ?>
+                                <?php displayCategories(); ?>
                             </tbody>
                         </table>
                     </div>

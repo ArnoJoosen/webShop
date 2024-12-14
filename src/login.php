@@ -15,22 +15,12 @@
     <?php include "core/pageElements/navBar.php"; ?>
 
     <!-- Main content -->
-<?php if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // check if session already started
-    $email = $_POST["email"]; // TODO check if email is valid
-    $password = $_POST["password"]; // TODO check if password is valid
-    $dbservername = "db";
-    $dbusername = "webuser"; // TOD change to env variable (security risk)
-    $dbpassword = "webpassword"; // TOD change to env variable (security risk)
-    $database = "webshop";
+<?php if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["email"]) && isset($_POST["password"])) {
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/core/config.php';
+    $conn = connectToDatabase();
 
-    // Create connection
-    $conn = new mysqli($dbservername, $dbusername, $dbpassword, $database);
-
-    // Check connection
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error); // TOD change to error page (security risk)
-    }
+    $email = $_POST["email"];
+    $password = $_POST["password"];
 
     // Prepare and bind
     $stmt = $conn->prepare(
@@ -40,6 +30,10 @@
 
     // Execute the statement
     $stmt->execute();
+    if ($stmt->errno) {
+        echo "Error executing query: " . $stmt->error;
+        exit();
+    }
 
     // Store the result
     $stmt->store_result();
@@ -64,21 +58,22 @@
             //echo '<div class="alert alert-success" role="alert">User logtin successfully</div>';
         } else {
             // Display an error message if password is not valid
-            echo "The password you entered was not valid.";
+            echo "<div class='alert alert-danger' role='alert'>The password or email you entered was not valid.</div>";
         }
     } else {
         // Display an error message if email doesn't exist
-        echo "No account found with that email.";
+        echo "<div class='alert alert-danger' role='alert'>The password or email you entered was not valid.</div>";
     }
 
     // Close statement and connection
     $stmt->close();
     $conn->close();
-} else {
-     ?>
+}
+?>
     <div class="container mt-5 login-container content">
         <div class="p-5 mb-4 rounded-3 border border-2">
             <h2 class="mb-4">Login</h2>
+            <!-- novalidation necessary because bootstrap already validates the form -->
             <form action="login.php" method="post">
                 <div class="mb-3">
                     <label for="email" class="form-label">Email address</label>
@@ -95,8 +90,6 @@
             </div>
         </div>
     </div>
-    <?php
-} ?>
 
     <!-- Footer -->
     <footer class="footer mt-auto py-3 theme">

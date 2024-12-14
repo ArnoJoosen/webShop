@@ -1,16 +1,19 @@
 <?php
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/core/config.php';
     // function to display products in a table
-    function displayProducts($conn) {
+    function displayProducts() {
+        $conn = connectToDatabase();
         $sql = "SELECT p.*, c.name as category_name FROM Product p
             LEFT JOIN Category c ON p.category_id = c.id";
         $result = $conn->query($sql);
+        $conn->close();
 
         while($row = $result->fetch_assoc()) {
             ?><tr>
                 <td><?php echo htmlspecialchars($row['id']); ?></td>
                 <td><img src='<?php echo htmlspecialchars($row['imagePath']); ?>' alt='<?php echo htmlspecialchars($row['name']); ?>' style='width: 50px;'></td>
                 <td><?php echo htmlspecialchars($row['name']); ?></td>
-                <td>$<?php echo htmlspecialchars(number_format($row['price'], 2)); ?></td>
+                <td><?php echo htmlspecialchars(number_format($row['price'], 2)); ?>€</td>
                 <td><?php echo htmlspecialchars($row['stock']); ?></td>
                 <td><?php echo htmlspecialchars($row['category_name']); ?></td>
                 <td><?php echo htmlspecialchars($row['available'] ? 'Available' : 'Not Available'); ?></td>
@@ -29,6 +32,7 @@
                             <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
                         </div>
                         <div class='modal-body'>
+                            <!-- novalidation necessary because bootstrap already validates the form -->
                             <form id="editProduct" enctype="multipart/form-data" onsubmit="return editProduct(event)">
                                 <input type='hidden' name='id' value='<?php echo htmlspecialchars($row['id']); ?>'>
                                 <div class='mb-3'>
@@ -55,8 +59,10 @@
                                     <label for='category<?php echo htmlspecialchars($row['id']); ?>' class='form-label'>Category</label>
                                     <select class='form-select' id='category<?php echo htmlspecialchars($row['id']); ?>' name='category_id' required>
                                         <?php
+                                            $conn = connectToDatabase();
                                             $sql = "SELECT id, name FROM Category";
                                             $categoryResult = $conn->query($sql);
+                                            $conn->close();
                                             while($category = $categoryResult->fetch_assoc()) {
                                                 echo "<option value='" . htmlspecialchars($category['id']) . "'" .
                                                     ($category['id'] == $row['category_id'] ? ' selected' : '') .
@@ -75,29 +81,10 @@
                 </div>
             </div><?php
         }
-        $conn->close();
     }
     session_start();
     if (!isset($_SESSION["admin_loggedin"]) && $_SESSION["admin_loggedin"] !== true) {
         header("Location: login.php");
-    }
-
-    $servername = "db";
-    $username = "webuser"; // TOD change to env variable (security risk)
-    $password = "webpassword"; // TOD change to env variable (security risk)
-    $database = "webshop";
-
-    // Create connection
-    $conn = new mysqli(
-        $servername,
-        $username,
-        $password,
-        $database
-    );
-
-    // Check connection
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error); // TODO: remove (security risk)
     }
 
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -123,6 +110,7 @@
                         $allowTypes = array('jpg', 'jpeg', 'png', 'gif');
                         if(in_array(strtolower($fileType), $allowTypes)) {
                             if(move_uploaded_file($_FILES["image"]["tmp_name"], $_SERVER['DOCUMENT_ROOT'] . $targetFilePath)) {
+                                $conn = connectToDatabase();
                                 $stmt = $conn->prepare("INSERT INTO Product (name, description, price, manufacturer, stock, category_id, available, imagePath) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 
                                 $name = $_POST['name'];
@@ -137,12 +125,13 @@
 
                                 if($stmt->execute()) {
                                     ob_start();
-                                    displayProducts($conn);
+                                    displayProducts();
                                     echo json_encode(['success' => true, 'tableContent' => ob_get_clean()]);
                                 } else {
                                     echo json_encode(['success' => false, 'error' => 'Database error']);
                                 }
                                 $stmt->close();
+                                $conn->close();
                             } else {
                                 echo json_encode(['success' => false, 'error' => 'Failed to upload image']);
                             }
@@ -157,7 +146,7 @@
                 case "edit":
                     if(isset($_POST['id']) && isset($_POST['name']) && isset($_POST['price']) && isset($_POST['description']) &&
                        isset($_POST['manufacturer']) && isset($_POST['stock']) && isset($_POST['category_id'])) {
-
+                        $conn = connectToDatabase();
                         $stmt = $conn->prepare("UPDATE Product SET name=?, description=?, price=?, manufacturer=?, stock=?, category_id=? WHERE id=?");
 
                         $stmt->bind_param("ssdsiii", $_POST['name'], $_POST['description'], $_POST['price'],
@@ -165,12 +154,13 @@
 
                         if($stmt->execute()) {
                             ob_start();
-                            displayProducts($conn);
+                            displayProducts();
                             echo json_encode(['success' => true, 'tableContent' => ob_get_clean()]);
                         } else {
                             echo json_encode(['success' => false, 'error' => 'Database error']);
                         }
                         $stmt->close();
+                        $conn->close();
                     } else {
                         echo json_encode(['success' => false, 'error' => 'Missing required fields']);
                     }
@@ -178,6 +168,7 @@
 
                 case "toggleAvailability":
                     if(isset($_POST['id'])) {
+                        $conn = connectToDatabase();
                         $stmt = $conn->prepare("UPDATE Product SET available = !available WHERE id=?");
                         $stmt->bind_param("i", $_POST['id']);
 
@@ -189,6 +180,7 @@
                             echo json_encode(['success' => false, 'error' => 'Database error']);
                         }
                         $stmt->close();
+                        $conn->close();
                     } else {
                         echo json_encode(['success' => false, 'error' => 'Missing required fields']);
                     }
@@ -225,6 +217,7 @@
                     <h5 class="mb-0">Add New Product</h5>
                 </div>
                 <div class="card-body">
+                    <!-- novalidation necessary because bootstrap already validates the form -->
                     <form id="addProductForm" enctype="multipart/form-data" onsubmit="return addItem(event)">
                         <div class="row mb-3">
                             <div class="col-md-6">
@@ -255,8 +248,10 @@
                                 <label for="category" class="form-label">Category</label>
                                 <select class="form-select" id="category" name="category_id" required>
                                     <?php
+                                        $conn = connectToDatabase();
                                         $sql = "SELECT id, name FROM Category";
                                         $result = $conn->query($sql);
+                                        $conn->close();
                                         while($row = $result->fetch_assoc()) {
                                             echo "<option value='" . htmlspecialchars($row['id']) . "'>" . htmlspecialchars($row['name']) . "</option>";
                                         }
@@ -303,7 +298,7 @@
                                 </tr>
                             </thead>
                             <tbody id="ajax">
-                                <?php displayProducts($conn); ?>
+                                <?php displayProducts(); ?>
                             </tbody>
                         </table>
                     </div>

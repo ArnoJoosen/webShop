@@ -4,24 +4,7 @@
         header("Location: login.php");
     }
 
-    // Database connection
-    $servername = "db";
-    $username = "webuser"; // TOD change to env variable (security risk)
-    $password = "webpassword"; // TOD change to env variable (security risk)
-    $database = "webshop";
-
-    // Create connection
-    $conn = new mysqli(
-        $servername,
-        $username,
-        $password,
-        $database
-    );
-
-    // Check connection
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error); // TODO: remove (security risk)
-    }
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/config.php';
 
     if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"])) {
         if ($_POST["action"] == "add"
@@ -35,6 +18,7 @@
             $password = password_hash($password, PASSWORD_DEFAULT);
             $role = $_POST["superAdmin"] ? "superAdmin" : "admin";
 
+            $conn = connectToDatabase();
             $stmt = $conn->prepare("INSERT INTO Admins (first_name, last_name, username, passwordhash, role) VALUES (?, ?, ?, ?, ?)");
             $stmt->bind_param("sssss", $firstName, $lastName, $username, $password, $role);
             // Execute the statement
@@ -44,7 +28,10 @@
                     "</div>"; // TODO remove error message in production change to generic error message
                 exit();
             }
+            $stmt->close();
+            $conn->close();
         } elseif ($_POST["action"] == "delete" && isset($_POST["id"])) {
+            $conn = connectToDatabase();
             $stmt = $conn->prepare("DELETE FROM Admins WHERE id = ?");
             $stmt->bind_param("i", $_POST["id"]);
             // Execute the statement
@@ -54,6 +41,8 @@
                     "</div>"; // TODO remove error message in production change to generic error message
                 exit();
             }
+            $stmt->close();
+            $conn->close();
         }
         ?>
             <table class="table">
@@ -68,8 +57,10 @@
                 </thead>
                 <tbody>
                     <?php
+                    $conn = connectToDatabase();
                     $sql = "SELECT * FROM Admins ORDER BY last_name, first_name";
                     $result = $conn->query($sql);
+                    $conn->close();
 
                     while($row = $result->fetch_assoc()) {
                         echo "<tr>";
@@ -110,6 +101,7 @@
                 <h5 class="mb-0">Create New Admin</h5>
             </div>
             <div class="card-body">
+                <!-- novalidation necessary because bootstrap already validates the form -->
                 <form id="adminForm" onsubmit="submitForm(event)">
                     <div class="row mb-3">
                         <div class="col-md-6">
@@ -164,8 +156,10 @@
                         </thead>
                         <tbody>
                             <?php
+                            $conn = connectToDatabase();
                             $sql = "SELECT * FROM Admins ORDER BY last_name, first_name";
                             $result = $conn->query($sql);
+                            $conn->close();
 
                             while($row = $result->fetch_assoc()) {
                                 echo "<tr>";
