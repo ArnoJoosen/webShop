@@ -248,8 +248,8 @@ class ShoppingCart {
             // Insert into Order_Product table
             $result->data_seek(0); // Reset result pointer
             while ($row = $result->fetch_assoc()) {
-                $orderProductStmt = $this->conn->prepare("INSERT INTO Order_Product (orders_id, product_id, quantity) VALUES (?, ?, ?)");
-                $orderProductStmt->bind_param("iii", $order_id, $row['id'], $row['quantity']);
+                $orderProductStmt = $this->conn->prepare("INSERT INTO Order_Product (orders_id, product_id, quantity, price) VALUES (?, ?, ?, ?)");
+                $orderProductStmt->bind_param("iiid", $order_id, $row['id'], $row['quantity'], $row['price']);
                 if (!$orderProductStmt->execute()) {
                     throw new Exception("Error: " . $orderProductStmt->error);
                 }
@@ -260,9 +260,12 @@ class ShoppingCart {
             $this->emptyCart();
 
             $this->conn->commit();
+
+            return $order_id;
         } catch (Exception $e) {
             $this->conn->rollback();
             die($e->getMessage()); // TODO change to error page (security risk)
+            throw $e;
         }
     }
 }

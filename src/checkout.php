@@ -28,15 +28,16 @@
             </div>
             <?php
         } else {
-        $cart->checkout();
         ?>
         <div class="text-center">
-            <h2> Shopping Cart</h2>
+            <h2>Thanks for ordering! Your order will be shipped soon.</h2>
             <?php
             $cart->displayCart();
             ?>
         </div>
-        <?php } ?>
+        <?php
+        $cart->checkout();
+        } ?>
     </div>
     <!-- Footer -->
     <footer class="footer mt-auto py-3 theme">

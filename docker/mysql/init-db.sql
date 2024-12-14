@@ -107,6 +107,7 @@ CREATE TABLE Order_Product (
     orders_id INT,
     product_id INT,
     quantity INT,
+    price FLOAT,
     FOREIGN KEY (orders_id) REFERENCES Orders(id),
     FOREIGN KEY (product_id) REFERENCES Product(id)
 );
