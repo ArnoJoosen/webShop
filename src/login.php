@@ -16,21 +16,8 @@
 
     <!-- Main content -->
 <?php if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // check if session already started
-    $email = $_POST["email"]; // TODO check if email is valid
-    $password = $_POST["password"]; // TODO check if password is valid
-    $dbservername = "db";
-    $dbusername = "webuser"; // TOD change to env variable (security risk)
-    $dbpassword = "webpassword"; // TOD change to env variable (security risk)
-    $database = "webshop";
-
-    // Create connection
-    $conn = new mysqli($dbservername, $dbusername, $dbpassword, $database);
-
-    // Check connection
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error); // TOD change to error page (security risk)
-    }
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/core/config.php';
+    $conn = connectToDatabase();
 
     // Prepare and bind
     $stmt = $conn->prepare(
@@ -40,6 +27,10 @@
 
     // Execute the statement
     $stmt->execute();
+    if ($stmt->errno) {
+        echo "Error executing query: " . $stmt->error;
+        exit();
+    }
 
     // Store the result
     $stmt->store_result();

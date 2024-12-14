@@ -16,16 +16,7 @@
     <!-- Main content -->
     <div class="container mt-4 ">
     <?php if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $dbservername = "db";
-        $dbusername = "webuser"; // TOD change to env variable (security risk)
-        $dbpassword = "webpassword"; // TOD change to env variable (security risk)
-        $database = "webshop";
-        $conn = new mysqli(
-            $dbservername,
-            $dbusername,
-            $dbpassword,
-            $database
-        );
+        require_once $_SERVER['DOCUMENT_ROOT'] . '/core/config.php';
 
         $first_name = $_POST["first_name"]; // TODO check if the input is valid
         $last_name = $_POST["last_name"]; // TODO check if the input is valid
@@ -35,6 +26,7 @@
         $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
         // Prepare and bind
+        $conn = connectToDatabase();
         $stmt = $conn->prepare(
             "INSERT INTO Customer (first_name, last_name, email, passwordhash, date_of_birth) VALUES (?, ?, ?, ?, ?)"
         );

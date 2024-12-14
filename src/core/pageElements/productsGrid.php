@@ -1,12 +1,5 @@
 <?php
-$dbservername = "db";
-$dbusername = "webuser"; // TOD change to env variable (security risk)
-$dbpassword = "webpassword"; // TOD change to env variable (security risk)
-$database = "webshop";
-
-// Create connection
-$conn = new mysqli($dbservername, $dbusername, $dbpassword, $database);
-
+require_once $_SERVER['DOCUMENT_ROOT'] . '/core/config.php';
 // check if category is set in url and get all products from category or subcategory
 if (isset($_GET["category"])) {
     $category = intval($_GET["category"]); // Sanitize category input
@@ -28,12 +21,16 @@ if (isset($_GET["category"])) {
             INNER JOIN CategoryHierarchy ch ON p.category_id = ch.id
             WHERE p.available = true;";
 
+    $conn = connectToDatabase();
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $category);
     $result = $stmt->execute();
     $result = $stmt->get_result();
+    $stmt->close();
+    $conn->close();
 
 } elseif (isset($_GET["search"]) && $_GET["search"] != "") {
+    $conn = connectToDatabase();
     $search = $conn->real_escape_string($_GET["search"]);
     // get all products that contain search string
     $sql = "SELECT * FROM Product WHERE (name LIKE ? OR description LIKE ?) AND available";
@@ -42,11 +39,14 @@ if (isset($_GET["category"])) {
     $stmt->bind_param("ss", $searchParam, $searchParam);
     $result = $stmt->execute();
     $result = $stmt->get_result();
+    $stmt->close();
 }
 else {
     // get all products
+    $conn = connectToDatabase();
     $sql = "SELECT * FROM Product WHERE available";
     $result = $conn->query($sql);
+    $conn->close();
 }
 
 if ($result && $result->num_rows > 0) {

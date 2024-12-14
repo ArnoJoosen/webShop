@@ -1,21 +1,5 @@
 <?php
-$servername = "db";
-$username = "webuser"; // TOD change to env variable (security risk)
-$password = "webpassword"; // TOD change to env variable (security risk)
-$database = "webshop";
-
-// Create connection
-$conn = new mysqli(
-    $servername,
-    $username,
-    $password,
-    $database
-);
-
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error); // TODO: remove (security risk)
-}
+require_once $_SERVER['DOCUMENT_ROOT'] . '/core/config.php';
 
 // Check if the request is a POST request and if it's for a review
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -30,10 +14,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     exit;
                 }
                 // Prepare and execute the SQL query to insert the review
+                $conn = connectToDatabase();
                 $sql = "INSERT INTO Review (product_id, customer_id, rating, comment) VALUES (?, ?, ?, ?)";
                 $stmt = $conn->prepare($sql);
                 $stmt->bind_param("iiis", $_POST["product_id"], $_SESSION["id"], $_POST["rating"], $_POST["comment"]);
                 $stmt->execute();
+                $stmt->close();
+                $conn->close();
             }
             break;
         case "deleteReview":
@@ -45,6 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     exit;
                 }
                 // check if the review belongs to the user
+                $conn = connectToDatabase();
                 $review_sql = "SELECT customer_id FROM Review WHERE id = ?";
                 $review_stmt = $conn->prepare($review_sql);
                 $review_stmt->bind_param("i", $_POST["review_id"]);
@@ -57,7 +45,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $stmt = $conn->prepare($sql);
                     $stmt->bind_param("i", $_POST["review_id"]);
                     $stmt->execute();
+                    $stmt->close();
                 }
+                $review_stmt->close();
+                $conn->close();
             }
             break;
     }
@@ -83,12 +74,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="container mt-4">
         <?php
             $id = $_GET["id"];
+            $conn = connectToDatabase();
             $sql = "SELECT * FROM Product WHERE id = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("i", $id);
             $stmt->execute();
             $result = $stmt->get_result();
             $product = $result->fetch_assoc();
+            $stmt->close();
 
             if (!$product) {
                 header("Location: products.php");
@@ -103,6 +96,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $review_stmt->bind_param("i", $id);
             $review_stmt->execute();
             $reviews = $review_stmt->get_result();
+            $review_stmt->close();
+            $conn->close();
         ?>
 
         <div class="card mb-4">

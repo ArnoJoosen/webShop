@@ -1,22 +1,14 @@
 <?php
+require_once $_SERVER['DOCUMENT_ROOT'] . '/core/config.php';
 class ShoppingCart {
     private $customID;
     private $conn;
-    // connect to database
-    private $dbservername = "db";
-    private $dbusername = "webuser"; // TOD change to env variable (security risk)
-    private $dbpassword = "webpassword"; // TOD change to env variable (security risk)
-    private $database = "webshop";
 
     public function __construct($customID) {
         $this->customID = $customID;
 
         // Create connection
-        $this->conn = new mysqli($this->dbservername, $this->dbusername, $this->dbpassword, $this->database);
-        // Check connection
-        if ($this->conn->connect_error) {
-            die("Connection failed: " . $this->conn->connect_error); // TOD change to error page (security risk)
-        }
+        $this->conn = connectToDatabase();
     }
 
     public function __destruct() {
@@ -29,6 +21,7 @@ class ShoppingCart {
         $stmt->execute();
         $result = $stmt->get_result();
         $row = $result->fetch_assoc();
+        $stmt->close();
         return $row["total"];
     }
 
@@ -43,6 +36,7 @@ class ShoppingCart {
         }
 
         $checkResult = $checkStmt->get_result();
+        $checkStmt->close();
 
         if ($checkResult->num_rows > 0) {
             // If product exists, update quantity
@@ -53,6 +47,7 @@ class ShoppingCart {
             if (!$updateStmt->execute()) {
                 die("Error: " . $updateStmt->error); // TODO change to error page (security risk)
             }
+            $updateStmt->close();
         } else {
             // If product doesn't exist, insert new row
             $insertStmt = $this->conn->prepare("INSERT INTO ShoppingCart (customer_id, product_id, quantity) VALUES (?, ?, 1)");
@@ -60,6 +55,7 @@ class ShoppingCart {
             if (!$insertStmt->execute()) {
                 die("Error: " . $insertStmt->error); // TODO change to error page (security risk)
             }
+            $insertStmt->close();
         }
     }
 
@@ -69,6 +65,7 @@ class ShoppingCart {
         if (!$deleteStmt->execute()) {
             die("Execute failed: " . $deleteStmt->error); // Debugging statement
         }
+        $deleteStmt->close();
     }
 
     public function incrementItem($itemId) {
@@ -77,6 +74,7 @@ class ShoppingCart {
         if (!$updateStmt->execute()) {
             die("Error: " . $updateStmt->error); // TODO change to error page (security risk)
         }
+        $updateStmt->close();
     }
 
     public function decrementItem($itemId) {
@@ -87,6 +85,7 @@ class ShoppingCart {
             die("Error: " . $checkStmt->error);
         }
         $result = $checkStmt->get_result();
+        $checkStmt->close();
         $row = $result->fetch_assoc();
 
         if ($row['quantity'] <= 1) {
@@ -99,6 +98,7 @@ class ShoppingCart {
             if (!$updateStmt->execute()) {
                 die("Error: " . $updateStmt->error); // TODO change to error page (security risk)
             }
+            $updateStmt->close();
         }
     }
 
@@ -108,6 +108,7 @@ class ShoppingCart {
         if (!$deleteStmt->execute()) {
             die("Error: " . $deleteStmt->error); // TODO change to error page (security risk)
         }
+        $deleteStmt->close();
     }
 
     public function displayCart() {
@@ -116,6 +117,7 @@ class ShoppingCart {
         $stmt->bind_param("i", $this->customID);
         $stmt->execute();
         $result = $stmt->get_result();
+        $stmt->close();
 
         // Display cart items if there are any
         if ($result->num_rows > 0) {
@@ -162,6 +164,7 @@ class ShoppingCart {
         $stmt->bind_param("i", $this->customID);
         $stmt->execute();
         $result = $stmt->get_result();
+        $stmt->close();
 
         // Display cart items if there are any
         if ($result->num_rows > 0) {

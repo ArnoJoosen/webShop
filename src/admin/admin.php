@@ -79,25 +79,10 @@
                         <h5 class="card-title"><i class="fas fa-chart-bar"></i> Quick Stats</h5>
                         <ul class="list-group list-group-flush">
                             <?php
-                                $servername = "db";
-                                $username = "webuser"; // TOD change to env variable (security risk)
-                                $password = "webpassword"; // TOD change to env variable (security risk)
-                                $database = "webshop";
-
-                                // Create connection
-                                $conn = new mysqli(
-                                    $servername,
-                                    $username,
-                                    $password,
-                                    $database
-                                );
-
-                                // Check connection
-                                if ($conn->connect_error) {
-                                    die("Connection failed: " . $conn->connect_error); // TODO: remove (security risk)
-                                }
+                                require_once $_SERVER['DOCUMENT_ROOT'] . '/core/config.php';
 
                                 // Count registered users
+                                $conn = connectToDatabase();
                                 $userQuery = "SELECT COUNT(*) as count FROM Customer";
                                 $userResult = $conn->query($userQuery);
                                 $userCount = $userResult->fetch_assoc()['count'];
@@ -111,6 +96,7 @@
                                 $stockQuery = "SELECT COUNT(*) as count FROM Product WHERE stock = 0";
                                 $stockResult = $conn->query($stockQuery);
                                 $stockCount = $stockResult->fetch_assoc()['count'];
+                                $conn->close();
                             ?>
                             <li class="list-group-item">Registered Users: <span class="fw-bold text-primary"><?php echo htmlspecialchars($userCount); ?></span></li>
                             <li class="list-group-item">Pending Orders: <span class="fw-bold text-primary"><?php echo htmlspecialchars($orderCount); ?></span></li>
