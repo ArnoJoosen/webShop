@@ -16,7 +16,7 @@
     <!-- Main content -->
     <div class="container mt-4 ">
     <?php if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        require_once $_SERVER['DOCUMENT_ROOT'] . '/core/config.php';
+        require_once __DIR__ . '/core/config.php';
 
         $first_name = $_POST["first_name"]; // TODO check if the input is valid
         $last_name = $_POST["last_name"]; // TODO check if the input is valid
