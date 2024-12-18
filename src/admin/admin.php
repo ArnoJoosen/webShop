@@ -79,7 +79,7 @@
                         <h5 class="card-title"><i class="fas fa-chart-bar"></i> Quick Stats</h5>
                         <ul class="list-group list-group-flush">
                             <?php
-                                require_once $_SERVER['DOCUMENT_ROOT'] . '/core/config.php';
+                                require_once __DIR__ . '/../core/config.php';
 
                                 // Count registered users
                                 $conn = connectToDatabase();

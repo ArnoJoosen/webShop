@@ -55,6 +55,9 @@ CREATE TABLE Address (
     FOREIGN KEY (customer_id) REFERENCES Customer(id)
 );
 
+INSERT INTO Address (street, street_number, city, postal_code, country, customer_id)
+        VALUES ('Main Street', 123, 'New York', '10001', 'USA', (SELECT id FROM Customer WHERE email = 'test@example.com'));
+
 CREATE TABLE Category (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100),
@@ -96,10 +99,12 @@ CREATE TABLE Review (
 CREATE TABLE Orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
     customer_id INT,
+    address_id INT,
     order_date DATE,
     total_price FLOAT,
     status ENUM('pending', 'shipped', 'delivered', 'cancelled'),
-    FOREIGN KEY (customer_id) REFERENCES Customer(id)
+    FOREIGN KEY (customer_id) REFERENCES Customer(id),
+    FOREIGN KEY (address_id) REFERENCES Address(id)
 );
 
 CREATE TABLE Order_Product (

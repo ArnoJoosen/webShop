@@ -8,7 +8,7 @@
 </div>
 <div class="d-flex flex-wrap justify-content-center gap-4">
     <?php
-    require_once $_SERVER['DOCUMENT_ROOT'] . '/core/config.php';
+    require_once __DIR__  . '/../config.php';
     $conn = connectToDatabase();
 
     // get categorie from url parameter if exists

@@ -1,50 +1,65 @@
 <?php
-    session_start();
-    if (!isset($_SESSION["admin_loggedin"]) && $_SESSION["admin_loggedin"] !== true && $_SESSION["admin_role"] !== 'superAdmin') {
-        header("Location: login.php");
-    }
+session_start();
+if (
+    !isset($_SESSION["admin_loggedin"]) &&
+    $_SESSION["admin_loggedin"] !== true &&
+    $_SESSION["admin_role"] !== "superAdmin"
+) {
+    header("Location: login.php");
+}
 
-    require_once $_SERVER['DOCUMENT_ROOT'] . '/config.php';
+require_once __DIR__ . "/../core/config.php";
 
-    if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"])) {
-        if ($_POST["action"] == "add"
-                && isset($_POST["firstName"]) && isset($_POST["lastName"])
-                && isset($_POST["username"]) && isset($_POST["password"])
-                && isset($_POST["superAdmin"])) {
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"])) {
+    if (
+        $_POST["action"] == "add" &&
+        isset($_POST["firstName"]) &&
+        isset($_POST["lastName"]) &&
+        isset($_POST["username"]) &&
+        isset($_POST["password"]) &&
+        isset($_POST["superAdmin"])
+    ) {
+        $firstName = $_POST["firstName"];
+        $lastName = $_POST["lastName"];
+        $username = $_POST["username"];
+        $password = password_hash($password, PASSWORD_DEFAULT);
+        $role = $_POST["superAdmin"] ? "superAdmin" : "admin";
 
-            $firstName = $_POST["firstName"];
-            $lastName = $_POST["lastName"];
-            $username = $_POST["username"];
-            $password = password_hash($password, PASSWORD_DEFAULT);
-            $role = $_POST["superAdmin"] ? "superAdmin" : "admin";
-
-            $conn = connectToDatabase();
-            $stmt = $conn->prepare("INSERT INTO Admins (first_name, last_name, username, passwordhash, role) VALUES (?, ?, ?, ?, ?)");
-            $stmt->bind_param("sssss", $firstName, $lastName, $username, $password, $role);
-            // Execute the statement
-            if ($stmt->execute() != true) {
-                echo '<div class="alert alert-danger" role="alert">Error: ' .
-                    $stmt->error .
-                    "</div>"; // TODO remove error message in production change to generic error message
-                exit();
-            }
-            $stmt->close();
-            $conn->close();
-        } elseif ($_POST["action"] == "delete" && isset($_POST["id"])) {
-            $conn = connectToDatabase();
-            $stmt = $conn->prepare("DELETE FROM Admins WHERE id = ?");
-            $stmt->bind_param("i", $_POST["id"]);
-            // Execute the statement
-            if ($stmt->execute() != true) {
-                echo '<div class="alert alert-danger" role="alert">Error: ' .
-                    $stmt->error .
-                    "</div>"; // TODO remove error message in production change to generic error message
-                exit();
-            }
-            $stmt->close();
-            $conn->close();
+        $conn = connectToDatabase();
+        $stmt = $conn->prepare(
+            "INSERT INTO Admins (first_name, last_name, username, passwordhash, role) VALUES (?, ?, ?, ?, ?)"
+        );
+        $stmt->bind_param(
+            "sssss",
+            $firstName,
+            $lastName,
+            $username,
+            $password,
+            $role
+        );
+        // Execute the statement
+        if ($stmt->execute() != true) {
+            echo '<div class="alert alert-danger" role="alert">Error: ' .
+                $stmt->error .
+                "</div>"; // TODO remove error message in production change to generic error message
+            exit();
         }
-        ?>
+        $stmt->close();
+        $conn->close();
+    } elseif ($_POST["action"] == "delete" && isset($_POST["id"])) {
+        $conn = connectToDatabase();
+        $stmt = $conn->prepare("DELETE FROM Admins WHERE id = ?");
+        $stmt->bind_param("i", $_POST["id"]);
+        // Execute the statement
+        if ($stmt->execute() != true) {
+            echo '<div class="alert alert-danger" role="alert">Error: ' .
+                $stmt->error .
+                "</div>"; // TODO remove error message in production change to generic error message
+            exit();
+        }
+        $stmt->close();
+        $conn->close();
+    } ?>
             <table class="table">
                 <thead>
                     <tr>
@@ -58,27 +73,35 @@
                 <tbody>
                     <?php
                     $conn = connectToDatabase();
-                    $sql = "SELECT * FROM Admins ORDER BY last_name, first_name";
+                    $sql =
+                        "SELECT * FROM Admins ORDER BY last_name, first_name";
                     $result = $conn->query($sql);
                     $conn->close();
 
-                    while($row = $result->fetch_assoc()) {
+                    while ($row = $result->fetch_assoc()) {
                         echo "<tr>";
-                        echo "<td>" . htmlspecialchars($row['username']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['first_name']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['last_name']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['role']) . "</td>";
+                        echo "<td>" .
+                            htmlspecialchars($row["username"]) .
+                            "</td>";
+                        echo "<td>" .
+                            htmlspecialchars($row["first_name"]) .
+                            "</td>";
+                        echo "<td>" .
+                            htmlspecialchars($row["last_name"]) .
+                            "</td>";
+                        echo "<td>" . htmlspecialchars($row["role"]) . "</td>";
                         echo "<td>";
-                        echo "<button class='btn btn-danger btn-sm delete-admin' onclick='onDelete(" . $row['id'] . ")'><i class='fas fa-trash'></i></button>";
+                        echo "<button class='btn btn-danger btn-sm delete-admin' onclick='onDelete(" .
+                            $row["id"] .
+                            ")'><i class='fas fa-trash'></i></button>";
                         echo "</td>";
                         echo "</tr>";
                     }
                     ?>
                 </tbody>
             </table>
-        <?php
-        exit();
-    }
+        <?php exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
@@ -157,18 +180,29 @@
                         <tbody>
                             <?php
                             $conn = connectToDatabase();
-                            $sql = "SELECT * FROM Admins ORDER BY last_name, first_name";
+                            $sql =
+                                "SELECT * FROM Admins ORDER BY last_name, first_name";
                             $result = $conn->query($sql);
                             $conn->close();
 
-                            while($row = $result->fetch_assoc()) {
+                            while ($row = $result->fetch_assoc()) {
                                 echo "<tr>";
-                                echo "<td>" . htmlspecialchars($row['username']) . "</td>";
-                                echo "<td>" . htmlspecialchars($row['first_name']) . "</td>";
-                                echo "<td>" . htmlspecialchars($row['last_name']) . "</td>";
-                                echo "<td>" . htmlspecialchars($row['role']) . "</td>";
+                                echo "<td>" .
+                                    htmlspecialchars($row["username"]) .
+                                    "</td>";
+                                echo "<td>" .
+                                    htmlspecialchars($row["first_name"]) .
+                                    "</td>";
+                                echo "<td>" .
+                                    htmlspecialchars($row["last_name"]) .
+                                    "</td>";
+                                echo "<td>" .
+                                    htmlspecialchars($row["role"]) .
+                                    "</td>";
                                 echo "<td>";
-                                echo "<button class='btn btn-danger btn-sm delete-admin' onclick='onDelete(" . $row['id'] . ")'><i class='fas fa-trash'></i></button>";
+                                echo "<button class='btn btn-danger btn-sm delete-admin' onclick='onDelete(" .
+                                    $row["id"] .
+                                    ")'><i class='fas fa-trash'></i></button>";
                                 echo "</td>";
                                 echo "</tr>";
                             }
