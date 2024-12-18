@@ -24,6 +24,7 @@ function showOrderDetails(orderId) {
     .then(data => {
       if(data.success) {
         document.querySelector('#orderDetailsContent').innerHTML = data.content;
+        document.querySelector('#orderTotal').textContent = data.total + '€';
         const modal = new bootstrap.Modal(document.querySelector('#detailsModal'));
         modal.show();
       } else {

@@ -48,6 +48,7 @@ function displayTable() {
 
 function displayOrderDetails($order_id) {
     $conn = connectToDatabase();
+    $total = 0;
     $sql = "SELECT Product.name, Order_Product.quantity, Order_Product.price
             FROM Order_Product
             JOIN Product ON Order_Product.product_id = Product.id
@@ -57,17 +58,20 @@ function displayOrderDetails($order_id) {
     $stmt->execute();
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
-    ?>
-        <tr>
-            <td><?php echo $row['name']; ?></td>
-            <td><?php echo $row['quantity']; ?></td>
-            <td><?php echo $row['price']; ?>€</td>
-            <td><?php echo $row['quantity'] * $row['price']; ?>€</td>
-        </tr>
-    <?php
+        $subtotal = $row['quantity'] * $row['price'];
+        $total += $subtotal;
+        ?>
+            <tr>
+                <td><?php echo $row['name']; ?></td>
+                <td><?php echo $row['quantity']; ?></td>
+                <td><?php echo $row['price']; ?>€</td>
+                <td><?php echo $subtotal; ?>€</td>
+            </tr>
+        <?php
     }
     $stmt->close();
     $conn->close();
+    return round($total, 2);
 }
 session_start();
 if (!isset($_SESSION["admin_loggedin"]) && $_SESSION["admin_loggedin"] !== true) {
@@ -92,8 +96,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['order_id']) && isset($
 if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['order_id'])) {
     header('Content-Type: application/json');
     ob_start();
-    displayOrderDetails($_GET['order_id']);
-    echo json_encode(['success' => true, 'content' => ob_get_clean()]);
+    $total = displayOrderDetails($_GET['order_id']);
+    echo json_encode(['success' => true, 'content' => ob_get_clean(), 'total' => $total]);
     exit();
 }
 ?>
@@ -141,6 +145,12 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['order_id'])) {
                                     <tbody id="orderDetailsContent">
                                         <!-- Content will be loaded via AJAX -->
                                     </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th colspan="3" class="text-end">Order Total:</th>
+                                            <th id="orderTotal">0€</th>
+                                        </tr>
+                                    </tfoot>
                                 </table>
                             </div>
                         </div>
