@@ -112,7 +112,7 @@
                                 }
 
                                 ob_start();
-                                displayCategories($conn);
+                                displayCategories();
                                 echo json_encode(['success' => true, 'content' => ob_get_clean()]);
                             } else {
                                 echo json_encode(['success' => false, 'error' => 'Database error']);
