@@ -1,5 +1,5 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/core/config.php';
+require_once __DIR__ . '/../config.php';
 // check if category is set in url and get all products from category or subcategory
 if (isset($_GET["category"])) {
     $category = intval($_GET["category"]); // Sanitize category input

@@ -1,5 +1,5 @@
 <?php
-    require_once $_SERVER['DOCUMENT_ROOT'] . '/core/config.php';
+    require_once __DIR__ . '/../core/config.php';
     // function to display products in a table
     function displayProducts() {
         $conn = connectToDatabase();
@@ -102,14 +102,14 @@
                         $targetFilePath = $targetDir . time() . '_' . $fileName;
                         $fileType = pathinfo($targetFilePath, PATHINFO_EXTENSION);
 
-                        if (!is_dir($_SERVER['DOCUMENT_ROOT'] . $targetDir)) {
+                        if (!is_dir(__DIR__ . "/../" . $targetDir)) {
                             echo json_encode(['success' => false, 'error' => 'Upload directory does not exist']);
                             exit;
                         }
 
                         $allowTypes = array('jpg', 'jpeg', 'png', 'gif');
                         if(in_array(strtolower($fileType), $allowTypes)) {
-                            if(move_uploaded_file($_FILES["image"]["tmp_name"], $_SERVER['DOCUMENT_ROOT'] . $targetFilePath)) {
+                            if(move_uploaded_file($_FILES["image"]["tmp_name"], __DIR__ . "/../" . $targetFilePath)) {
                                 $conn = connectToDatabase();
                                 $stmt = $conn->prepare("INSERT INTO Product (name, description, price, manufacturer, stock, category_id, available, imagePath) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 

@@ -1,5 +1,5 @@
 <?php
-    require_once $_SERVER['DOCUMENT_ROOT'] . '/core/config.php';
+    require_once __DIR__ . '/../core/config.php';
     function displayCategories() {
         $conn = connectToDatabase();
         $sql = "SELECT c1.id, c1.name, c1.imagePath, c2.name as parent_name
@@ -90,13 +90,13 @@
                         $targetFilePath = $targetDir . $fileName;
 
                         // Check if folder exists
-                        if (!is_dir($_SERVER['DOCUMENT_ROOT'] . $targetDir)) {
+                        if (!is_dir(__DIR__ . "/../" . $targetDir)) {
                             header('Content-Type: application/json');
                             echo json_encode(['success' => false, 'error' => 'Upload directory does not exist']);
                             exit;
                         }
 
-                        if(move_uploaded_file($_FILES["image"]["tmp_name"], $_SERVER['DOCUMENT_ROOT'] . $targetFilePath)) {
+                        if(move_uploaded_file($_FILES["image"]["tmp_name"], __DIR__ . "/../" . $targetFilePath)) {
                             $conn = connectToDatabase();
                             $stmt = $conn->prepare("INSERT INTO Category (name, imagePath) VALUES (?, ?)");
                             $stmt->bind_param("ss", $_POST['name'], $targetFilePath);
@@ -133,7 +133,7 @@
                             $targetDir = "/uploads/categories/";
                             $fileName = time() . '_' . basename($_FILES["image"]["name"]);
                             $targetFilePath = $targetDir . $fileName;
-                            move_uploaded_file($_FILES["image"]["tmp_name"], $_SERVER['DOCUMENT_ROOT'] . $targetFilePath);
+                            move_uploaded_file($_FILES["image"]["tmp_name"], __DIR__ . "/../" . $targetFilePath);
 
                             $conn = connectToDatabase();
                             $stmt = $conn->prepare("UPDATE Category SET name = ?, imagePath = ? WHERE id = ?");
