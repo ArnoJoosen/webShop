@@ -36,10 +36,10 @@ function displayOrderDetails($order_id) {
         $total += $subtotal;
         ?>
             <tr>
-                <td><?php echo $row['name']; ?></td>
-                <td><?php echo $row['quantity']; ?></td>
-                <td><?php echo $row['price']; ?>€</td>
-                <td><?php echo $subtotal; ?>€</td>
+                <td><?php echo htmlspecialchars($row['name']); ?></td>
+                <td><?php echo htmlspecialchars($row['quantity']); ?></td>
+                <td><?php echo htmlspecialchars($row['price']); ?>€</td>
+                <td><?php echo htmlspecialchars($subtotal); ?>€</td>
             </tr>
         <?php
     }
@@ -147,22 +147,22 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['order_id'])) {
                             $stmt->execute();
                             $result = $stmt->get_result();
                             while($row = $result->fetch_assoc()) {
-                            ?>
-                                <tr>
-                                    <td><?php echo $row['id']; ?></td>
-                                    <td><?php echo $row['first_name'] . ' ' . $row['last_name']; ?></td>
-                                    <td><?php echo date('d/m/Y', strtotime($row['order_date'])); ?></td>
-                                    <td><?php echo $row['street'] . ' ' . $row['street_number']; ?><br>
-                                        <?php echo $row['postal_code'] . ' ' . $row['city']; ?><br>
-                                        <?php echo $row['country']; ?>
-                                    </td>
-                                    <td>€<?php echo $row['total_price']; ?></td>
-                                    <td><?php echo $row['status']; ?></td>
-                                    <td>
-                                        <button class='btn btn-info btn-sm' onclick='showOrderDetails(<?php echo $row['id']; ?>)'><i class="fas fa-info-circle"></i></button>
-                                    </td>
-                                </tr>
-                            <?php
+                                ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($row['id']); ?></td>
+                                        <td><?php echo htmlspecialchars($row['first_name']) . ' ' . htmlspecialchars($row['last_name']); ?></td>
+                                        <td><?php echo date('d/m/Y', strtotime($row['order_date'])); ?></td>
+                                        <td><?php echo htmlspecialchars($row['street']) . ' ' . htmlspecialchars($row['street_number']); ?><br>
+                                            <?php echo htmlspecialchars($row['postal_code']) . ' ' . htmlspecialchars($row['city']); ?><br>
+                                            <?php echo htmlspecialchars($row['country']); ?>
+                                        </td>
+                                        <td><?php echo htmlspecialchars($row['total_price']); ?>€</td>
+                                        <td><?php echo htmlspecialchars($row['status']); ?></td>
+                                        <td>
+                                            <button class='btn btn-info btn-sm' onclick='showOrderDetails(<?php echo $row['id']; ?>)'><i class="fas fa-info-circle"></i></button>
+                                        </td>
+                                    </tr>
+                                <?php
                             }
                             $conn->close();?>
                         </tbody>

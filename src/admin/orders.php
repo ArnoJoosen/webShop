@@ -11,14 +11,14 @@ function displayTable() {
     while($row = $result->fetch_assoc()) {
     ?>
         <tr>
-            <td><?php echo $row['id']; ?></td>
-            <td><?php echo $row['first_name'] . ' ' . $row['last_name']; ?></td>
-            <td><?php echo $row['order_date']; ?></td>
-            <td>€<?php echo $row['total_price']; ?></td>
-            <td><?php echo $row['status']; ?></td>
+            <td><?php $html = htmlspecialchars($row['id']); echo $html; ?></td>
+            <td><?php $html = htmlspecialchars($row['first_name'] . ' ' . $row['last_name']); echo $html; ?></td>
+            <td><?php $html = date('d-m-Y', strtotime($row['order_date'])); echo $html; ?></td>
+            <td><?php $html = htmlspecialchars($row['total_price']); echo $html; ?>€</td>
+            <td><?php $html = htmlspecialchars($row['status']); echo $html; ?></td>
             <td>
                 <button class='btn btn-primary btn-sm me-2' data-bs-toggle='modal' data-bs-target='#editModal<?php echo $row['id']; ?>'><i class="fas fa-edit"></i></button>
-                <button class='btn btn-info btn-sm' onclick='showOrderDetails(<?php echo $row['id']; ?>)'><i class="fas fa-info-circle"></i></button>
+                <button class='btn btn-info btn-sm' onclick='showOrderDetails(<?php echo htmlspecialchars($row['id']); ?>)'><i class="fas fa-info-circle"></i></button>
             </td>
         </tr>
 
@@ -34,18 +34,18 @@ function displayTable() {
                         <div class="mb-3">
                             <h6>Shipping Address:</h6>
                             <p>
-                                <?php echo $row['street'] . ' ' . $row['street_number']; ?><br>
-                                <?php echo $row['postal_code'] . ' ' . $row['city']; ?><br>
-                                <?php echo $row['country']; ?>
+                                <?php $html = htmlspecialchars($row['street'] . ' ' . $row['street_number']); echo $html; ?><br>
+                                <?php $html = htmlspecialchars($row['postal_code'] . ' ' . $row['city']); echo $html; ?><br>
+                                <?php $html = htmlspecialchars($row['country']); echo $html; ?>
                             </p>
                         </div>
                         <form onsubmit="return changeStatus(event, <?php echo $row['id']; ?>);">
                             <input type='hidden' name='order_id' value='<?php echo htmlspecialchars($row['id']); ?>'>
                             <select class='form-select' name='status'>
-                                <option value='pending' <?php echo ($row['status'] == 'pending' ? 'selected="selected"' : ''); ?>>Pending</option>
-                                <option value='shipped' <?php echo ($row['status'] == 'shipped' ? 'selected="selected"' : ''); ?>>Shipped</option>
-                                <option value='delivered' <?php echo ($row['status'] == 'delivered' ? 'selected="selected"' : ''); ?>>Delivered</option>
-                                <option value='cancelled' <?php echo ($row['status'] == 'cancelled' ? 'selected="selected"' : ''); ?>>Cancelled</option>
+                                <option value='pending' <?php echo (htmlspecialchars($row['status']) == 'pending' ? 'selected="selected"' : ''); ?>>Pending</option>
+                                <option value='shipped' <?php echo (htmlspecialchars($row['status']) == 'shipped' ? 'selected="selected"' : ''); ?>>Shipped</option>
+                                <option value='delivered' <?php echo (htmlspecialchars($row['status']) == 'delivered' ? 'selected="selected"' : ''); ?>>Delivered</option>
+                                <option value='cancelled' <?php echo (htmlspecialchars($row['status']) == 'cancelled' ? 'selected="selected"' : ''); ?>>Cancelled</option>
                             </select>
                             <button type='submit' class='btn btn-primary mt-3'>Update Status</button>
                         </form>
@@ -74,10 +74,10 @@ function displayOrderDetails($order_id) {
         $total += $subtotal;
         ?>
             <tr>
-                <td><?php echo $row['name']; ?></td>
-                <td><?php echo $row['quantity']; ?></td>
-                <td><?php echo $row['price']; ?>€</td>
-                <td><?php echo $subtotal; ?>€</td>
+                <td><?php echo htmlspecialchars($row['name']); ?></td>
+                <td><?php echo htmlspecialchars($row['quantity']); ?></td>
+                <td><?php echo htmlspecialchars($row['price']); ?>€</td>
+                <td><?php echo htmlspecialchars($subtotal); ?>€</td>
             </tr>
         <?php
     }
