@@ -246,7 +246,7 @@ class ShoppingCart {
             <?php } else {echo "<p>Your shopping cart is empty.</p>";}
     }
 
-    public function checkout() {
+    public function checkout($address_id) {
         // get ShoppingCart items for the customer
         $stmt = $this->conn->prepare(
             "SELECT Product.name, Product.price, ShoppingCart.quantity, Product.id FROM ShoppingCart JOIN Product ON ShoppingCart.product_id = Product.id WHERE ShoppingCart.customer_id = ?"
@@ -268,9 +268,9 @@ class ShoppingCart {
 
             // Insert into Orders table
             $orderStmt = $this->conn->prepare(
-                "INSERT INTO Orders (customer_id, order_date, total_price, status) VALUES (?, CURDATE(), ?, 'pending')"
+                "INSERT INTO Orders (customer_id, address_id, order_date, total_price, status) VALUES (?, ?, CURDATE(), ?, 'pending')"
             );
-            $orderStmt->bind_param("id", $this->customID, $total_price);
+            $orderStmt->bind_param("iid", $this->customID, $address_id, $total_price);
             if (!$orderStmt->execute()) {
                 throw new Exception("Error: " . $orderStmt->error);
             }

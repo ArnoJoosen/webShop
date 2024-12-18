@@ -2,7 +2,11 @@
 require_once __DIR__ . '/../core/config.php';
 function displayTable() {
     $conn = connectToDatabase();
-    $sql = "SELECT Orders.*, Customer.first_name, Customer.last_name FROM Orders JOIN Customer ON Orders.customer_id = Customer.id";
+    $sql = "SELECT Orders.*, Customer.first_name, Customer.last_name, Address.street, Address.street_number, Address.city, Address.postal_code, Address.country
+            FROM Orders
+            JOIN Customer ON Orders.customer_id = Customer.id
+            JOIN Address ON Orders.address_id = Address.id
+            where Orders.status != 'delivered';";
     $result = $conn->query($sql);
     while($row = $result->fetch_assoc()) {
     ?>
@@ -27,6 +31,14 @@ function displayTable() {
                         <button type='button' class='btn-close' data-bs-dismiss='modal'></button>
                     </div>
                     <div class='modal-body'>
+                        <div class="mb-3">
+                            <h6>Shipping Address:</h6>
+                            <p>
+                                <?php echo $row['street'] . ' ' . $row['street_number']; ?><br>
+                                <?php echo $row['postal_code'] . ' ' . $row['city']; ?><br>
+                                <?php echo $row['country']; ?>
+                            </p>
+                        </div>
                         <form onsubmit="return changeStatus(event, <?php echo $row['id']; ?>);">
                             <input type='hidden' name='order_id' value='<?php echo htmlspecialchars($row['id']); ?>'>
                             <select class='form-select' name='status'>
