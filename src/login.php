@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/styles-login.css">
+    <script src="script/login.js"></script>
     <!--<link href="css/blue-theme.css" rel="stylesheet">-->
 </head>
 <body>
@@ -20,7 +21,26 @@
     $conn = connectToDatabase();
 
     $email = $_POST["email"];
+    // Validate email regex to avoid unnecessary database query
+    // /^ = string match start of string
+    // [a-zA-Z0-9._%+-] = match any letter, number, or special character
+    // + = match one or more of the preceding token
+    // \. = match a period
+    // {2,} = match two or more of the preceding token
+    // $ = match end of string
+    $emailRegex = '/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/';
+    if (!preg_match($emailRegex, $email)) {
+        echo '<div class="alert alert-danger" role="alert">Invalid email format</div>';
+        exit;
+    }
+
     $password = $_POST["password"];
+    // evoide unecessary database query if password is empty or less than 8 characters
+    if (empty($password) || strlen($password) < 8) {
+        echo '<div class="alert alert-danger" role="alert">Password must be at least 8 characters long</div>';
+        echo "<p>" . strlen($password) . "</p>";
+        exit;
+    }
 
     // Prepare and bind
     $stmt = $conn->prepare(
@@ -74,7 +94,7 @@
         <div class="p-5 mb-4 rounded-3 border border-2">
             <h2 class="mb-4">Login</h2>
             <!-- novalidation necessary because bootstrap already validates the form -->
-            <form action="login.php" method="post">
+            <form action="login.php" method="post" onsubmit="return validateForm()">
                 <div class="mb-3">
                     <label for="email" class="form-label">Email address</label>
                     <input type="email" class="form-control" id="email" name="email" required>

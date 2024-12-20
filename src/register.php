@@ -7,22 +7,58 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="css/styles.css">
+    <script src="script/register.js"></script>
     <!--<link href="css/blue-theme.css" rel="stylesheet">-->
 </head>
 <body>
     <!-- Navigation -->
     <?php include "core/pageElements/navBar.php"; ?>
+    <div id="errorBox" class="alert alert-danger alert-dismissible fade" role="alert" style="display: none;">
+        <span id="errorMessage"></span>
+    </div>
 
     <!-- Main content -->
     <div class="container mt-4 ">
     <?php if ($_SERVER["REQUEST_METHOD"] == "POST") {
         require_once __DIR__ . '/core/config.php';
 
-        $first_name = $_POST["first_name"]; // TODO check if the input is valid
-        $last_name = $_POST["last_name"]; // TODO check if the input is valid
-        $email = $_POST["email"]; // TODO check if the input is valid
-        $password = $_POST["password"]; // TODO check if the input is valid
-        $date_of_birth = $_POST["date_of_birth"]; // TODO check if the input is valid
+        $first_name = $_POST["first_name"];
+        $last_name = $_POST["last_name"];
+        $email = $_POST["email"];
+        // Validate email regex
+        // /^ = string match start of string
+        // [a-zA-Z0-9._%+-] = match any letter, number, or special character
+        // + = match one or more of the preceding token
+        // \. = match a period
+        // {2,} = match two or more of the preceding token
+        // $ = match end of string
+        $emailRegex = '/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/';
+        if (!preg_match($emailRegex, $email)) {
+            echo '<div class="alert alert-danger" role="alert">Invalid email format</div>';
+            exit;
+        }
+        $password = $_POST["password"];
+        if (empty($password)) {
+            echo '<div class="alert alert-danger" role="alert">Password cannot be empty</div>';
+            exit;
+        }
+        if (strlen($password) < 8) {
+            echo '<div class="alert alert-danger" role="alert">Password must be at least 8 characters long</div>';
+            exit;
+        }
+        if (!preg_match('/\d/', $password)) {
+            echo '<div class="alert alert-danger" role="alert">Password must contain at least one number</div>';
+            exit;
+        }
+        if (!preg_match('/[A-Z]/', $password)) {
+            echo '<div class="alert alert-danger" role="alert">Password must contain at least one uppercase letter</div>';
+            exit;
+        }
+        $date_of_birth = $_POST["date_of_birth"];
+        if (empty($date_of_birth)) {
+            echo '<div class="alert alert-danger" role="alert">Date of birth cannot be empty</div>';
+            exit;
+        }
         $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
         // Prepare and bind
@@ -57,7 +93,7 @@
             <div class="col-md-6 p-5 mb-4 rounded-3 border border-2">
                 <h1>Register</h1>
                 <!-- novalidation necessary because bootstrap already validates the form -->
-                <form action="register.php" method="post">
+                <form action="register.php" method="post" onsubmit="return validatePassword()">
                     <div class="mb-3">
                         <label for="first_name" class="form-label">First Name</label>
                         <input type="text" class="form-control" id="first_name" name="first_name" required>
@@ -73,6 +109,8 @@
                     <div class="mb-3">
                         <label for="password" class="form-label">Password</label>
                         <input type="password" class="form-control" id="password" name="password" required>
+                        <div id="passwordHelp" class="form-text">Password must be at least 8 characters long and contain at least one number, one uppercase letter, and one special character.</div>
+                        <div id="passwordError" class="invalid-feedback"></div>
                     </div>
                     <div class="mb-3">
                         <label for="date_of_birth" class="form-label">Date of Birth</label>

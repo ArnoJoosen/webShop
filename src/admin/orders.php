@@ -91,7 +91,9 @@ if (!isset($_SESSION["admin_loggedin"]) && $_SESSION["admin_loggedin"] !== true)
 }
 
 // if post change status
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['order_id']) && isset($_POST['status'])) {
+if ($_SERVER["REQUEST_METHOD"] == "POST"
+    && isset($_POST['order_id']) && is_numeric($_POST['order_id'])
+    && isset($_POST['status']) && !empty($_POST['status'])) {
     header('Content-Type: application/json');
     $conn = connectToDatabase();
     $order_id = $conn->real_escape_string($_POST['order_id']);
@@ -104,8 +106,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['order_id']) && isset($
     displayTable();
     echo json_encode(['success' => true, 'content' => ob_get_clean()]);
     exit();
+} elseif ($_SERVER["REQUEST_METHOD"] == "POST") {
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'message' => 'Invalid request']);
+    exit();
 }
-if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['order_id'])) {
+if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['order_id']) && is_numeric($_GET['order_id'])) {
     header('Content-Type: application/json');
     ob_start();
     $total = displayOrderDetails($_GET['order_id']);

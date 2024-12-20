@@ -8,8 +8,8 @@ if (!isset($_SESSION["loggedin"])) {
 $cart = new ShoppingCart($_SESSION["id"]);
 if (
     $_SERVER["REQUEST_METHOD"] == "POST" &&
-    isset($_POST["product_id"]) &&
-    isset($_POST["name"]) &&
+    isset($_POST["product_id"]) && empty($_POST["product_id"]) &&
+    isset($_POST["name"]) && empty($_POST["name"]) &&
     isset($_POST["action"])
 ) {
     if ($_POST["action"] == "remove") {

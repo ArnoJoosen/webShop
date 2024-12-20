@@ -30,6 +30,26 @@ if (!isset($_SESSION['loggedin'])) {
     exit;
 }
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['street']) && isset($_POST['street_number']) && isset($_POST['city']) && isset($_POST['postal_code']) && isset($_POST['country'])) {
+    if (empty($_POST['street'])) {
+        echo json_encode(['success' => false, 'message' => 'Invalid street']);
+        exit;
+    }
+    if (empty($_POST['street_number']) || !is_numeric($_POST['street_number'])) {
+        echo json_encode(['success' => false, 'message' => 'Invalid street number']);
+        exit;
+    }
+    if (empty($_POST['city'])) {
+        echo json_encode(['success' => false, 'message' => 'Invalid city']);
+        exit;
+    }
+    if (empty($_POST['postal_code']) || !is_numeric($_POST['postal_code'])) {
+        echo json_encode(['success' => false, 'message' => 'Invalid postal code']);
+        exit;
+    }
+    if (empty($_POST['country'])) {
+        echo json_encode(['success' => false, 'message' => 'Invalid country']);
+        exit;
+    }
     $conn = connectToDatabase();
     $stmt = $conn->prepare("INSERT INTO Address (street, street_number, city, postal_code, country, customer_id) VALUES (?, ?, ?, ?, ?, ?)");
     $stmt->bind_param("sisssi", $_POST['street'], $_POST['street_number'], $_POST['city'], $_POST['postal_code'], $_POST['country'], $_SESSION['id']);

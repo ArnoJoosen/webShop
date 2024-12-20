@@ -93,9 +93,13 @@
         if (isset($_POST["action"])) {
             switch($_POST["action"]) {
                 case "add":
-                    if(isset($_POST['name']) && isset($_POST['price']) && isset($_POST['description']) &&
-                       isset($_POST['manufacturer']) && isset($_POST['stock']) && isset($_POST['category_id']) &&
-                       isset($_FILES['image'])) {
+                    if(isset($_POST['name']) && !empty($_POST['name'])
+                        && isset($_POST['price']) && is_numeric($_POST['price'])
+                        && isset($_POST['description']) && !empty($_POST['description'])
+                        && isset($_POST['manufacturer'])  && !empty($_POST['manufacturer'])
+                        && isset($_POST['stock']) && is_numeric($_POST['stock'])
+                        && isset($_POST['category_id']) && !empty($_POST['category_id'])
+                        && isset($_FILES['image'])) {
 
                         $targetDir = "/uploads/products/";
                         $fileName = basename($_FILES["image"]["name"]);
@@ -144,8 +148,13 @@
                     break;
 
                 case "edit":
-                    if(isset($_POST['id']) && isset($_POST['name']) && isset($_POST['price']) && isset($_POST['description']) &&
-                       isset($_POST['manufacturer']) && isset($_POST['stock']) && isset($_POST['category_id'])) {
+                    if(isset($_POST['id']) && !empty($_POST['id'])
+                        && isset($_POST['name']) && !empty($_POST['name'])
+                        && isset($_POST['price']) && is_numeric($_POST['price'])
+                        && isset($_POST['description'])  && !empty($_POST['description'])
+                        && isset($_POST['manufacturer']) && !empty($_POST['manufacturer'])
+                        && isset($_POST['stock']) && is_numeric($_POST['stock'])
+                        && isset($_POST['category_id']) && is_numeric($_POST['category_id'])) {
                         $conn = connectToDatabase();
                         $stmt = $conn->prepare("UPDATE Product SET name=?, description=?, price=?, manufacturer=?, stock=?, category_id=? WHERE id=?");
 
@@ -167,7 +176,7 @@
                     break;
 
                 case "toggleAvailability":
-                    if(isset($_POST['id'])) {
+                    if(isset($_POST['id']) && is_numeric($_POST['id'])) {
                         $conn = connectToDatabase();
                         $stmt = $conn->prepare("UPDATE Product SET available = !available WHERE id=?");
                         $stmt->bind_param("i", $_POST['id']);

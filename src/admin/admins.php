@@ -11,17 +11,31 @@ if (
 require_once __DIR__ . "/../core/config.php";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"])) {
+    header('Content-Type: application/json');
     if (
-        $_POST["action"] == "add" &&
-        isset($_POST["firstName"]) &&
-        isset($_POST["lastName"]) &&
-        isset($_POST["username"]) &&
-        isset($_POST["password"]) &&
-        isset($_POST["superAdmin"])
+        $_POST["action"] == "add" && !empty($_POST["action"]) &&
+        isset($_POST["firstName"]) && !empty($_POST["firstName"]) &&
+        isset($_POST["lastName"]) && !empty($_POST["lastName"]) &&
+        isset($_POST["username"]) && !empty($_POST["username"]) &&
+        isset($_POST["password"]) && !empty($_POST["password"]) &&
+        isset($_POST["superAdmin"]) && !empty($_POST["superAdmin"])
     ) {
         $firstName = $_POST["firstName"];
         $lastName = $_POST["lastName"];
         $username = $_POST["username"];
+        $password = $_POST["password"];
+        if (empty($password) && strlen($password) < 8) {
+            echo json_encode(['success' => false, 'error' => 'Password must be at least 8 characters long']);
+            exit();
+        }
+        if (!preg_match('/\d/', $password)) {
+            echo json_encode(['success' => false, 'error' => 'Password must contain at least one number']);
+            exit();
+        }
+        if (!preg_match('/[A-Z]/', $password)) {
+            echo json_encode(['success' => false, 'error' => 'Password must contain at least one uppercase letter']);
+            exit();
+        }
         $password = password_hash($password, PASSWORD_DEFAULT);
         $role = $_POST["superAdmin"] ? "superAdmin" : "admin";
 
@@ -39,27 +53,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"])) {
         );
         // Execute the statement
         if ($stmt->execute() != true) {
-            echo '<div class="alert alert-danger" role="alert">Error: ' .
-                $stmt->error .
-                "</div>"; // TODO remove error message in production change to generic error message
+            echo json_encode(['success' => false, 'error' => 'Database error occured']);
             exit();
         }
         $stmt->close();
         $conn->close();
-    } elseif ($_POST["action"] == "delete" && isset($_POST["id"])) {
+    } elseif ($_POST["action"] == "delete" && isset($_POST["id"]) && !empty($_POST["id"]) && is_numeric($_POST["id"]) && $_POST["id"] > 0) {
         $conn = connectToDatabase();
         $stmt = $conn->prepare("DELETE FROM Admins WHERE id = ?");
         $stmt->bind_param("i", $_POST["id"]);
         // Execute the statement
         if ($stmt->execute() != true) {
-            echo '<div class="alert alert-danger" role="alert">Error: ' .
-                $stmt->error .
-                "</div>"; // TODO remove error message in production change to generic error message
+            echo json_encode(['success' => false, 'error' => 'Database error occured']);
             exit();
         }
         $stmt->close();
         $conn->close();
-    } ?>
+    }
+        ob_start();
+        ?>
             <table class="table">
                 <thead>
                     <tr>
@@ -100,7 +112,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"])) {
                     ?>
                 </tbody>
             </table>
-        <?php exit();
+        <?php
+        echo json_encode(['success' => true, 'content' => ob_get_clean()]);
+        exit();
 }
 ?>
 <!DOCTYPE html>
@@ -117,6 +131,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"])) {
 </head>
 <body>
     <?php include "pageElements/navBar.php"; ?>
+    <div id="errorBox" class="alert alert-danger alert-dismissible fade" role="alert" style="display: none;">
+        <span id="errorMessage"></span>
+    </div>
     <!-- Main content -->
     <div class="container mt-4">
                 <div class="card mb-4">

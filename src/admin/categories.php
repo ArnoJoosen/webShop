@@ -81,10 +81,13 @@
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         header('Content-Type: application/json');
 
-        if (isset($_POST["action"])) {
+        if (isset($_POST["action"]) && !empty($_POST["action"])) {
             switch($_POST["action"]) {
                 case "add":
-                    if(isset($_POST['name']) && isset($_FILES['image'])) {
+                    if(isset($_POST['name']) && isset($_FILES['image'])
+                            && isset($_POST['parent_category']) && is_numeric($_POST['parent_category'])
+                            && isset($_POST['name']) && !empty($_POST['name'])) {
+
                         $targetDir = "/uploads/categories/";
                         $fileName = time() . '_' . basename($_FILES["image"]["name"]);
                         $targetFilePath = $targetDir . $fileName;
@@ -122,11 +125,15 @@
                         } else {
                             echo json_encode(['success' => false, 'error' => 'Failed to upload image']);
                         }
+                    } else {
+                        echo json_encode(['success' => false, 'error' => 'Missing required fields']);
                     }
                     break;
 
                 case "edit":
-                    if(isset($_POST['id']) && isset($_POST['name'])) {
+                    if(isset($_POST['id']) && is_numeric($_POST['id'])
+                            && isset($_POST['name']) && !empty($_POST['name'])
+                            && isset($_POST['parent_category']) && is_numeric($_POST['parent_category'])) {
                         $updateImage = isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK;
 
                         if($updateImage) {
@@ -159,11 +166,13 @@
                         }
                         $stmt->close();
                         $conn->close();
+                    } else {
+                        echo json_encode(['success' => false, 'error' => 'Missing required fields']);
                     }
                     break;
 
                 case "delete":
-                    if(isset($_POST['id'])) {
+                    if(isset($_POST['id']) && is_numeric($_POST['id'])) {
                         // Check for dependent products
                         $conn = connectToDatabase();
                         $stmt = $conn->prepare("SELECT COUNT(*) as count FROM Product WHERE category_id = ?");
@@ -203,6 +212,8 @@
                         }
                         $stmt->close();
                         $conn->close();
+                    } else {
+                        echo json_encode(['success' => false, 'error' => 'Missing required fields']);
                     }
                     break;
             }

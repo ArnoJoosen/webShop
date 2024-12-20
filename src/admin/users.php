@@ -4,7 +4,7 @@ session_start();
 if (!isset($_SESSION["admin_loggedin"]) && $_SESSION["admin_loggedin"] !== true) {
     header("Location: login.php");
 }
-if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET["user_id"])) {
+if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET["user_id"]) && is_numeric($_GET["user_id"])) {
     $conn = connectToDatabase();
     $userId = mysqli_real_escape_string($conn, $_GET["user_id"]);
 
