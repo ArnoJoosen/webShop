@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../core/config.php';
+require_once __DIR__ . "/../core/error_handler.php";
 function displayTable() {
     $conn = connectToDatabase();
     $sql = "SELECT Orders.*, Customer.first_name, Customer.last_name, Address.street, Address.street_number, Address.city, Address.postal_code, Address.country
@@ -8,6 +9,9 @@ function displayTable() {
             JOIN Address ON Orders.address_id = Address.id
             where Orders.status != 'delivered';";
     $result = $conn->query($sql);
+    if ($result->num_rows == 0) {
+        throw new DatabaseError("Error: " . $conn->error, "We're sorry, something went wrong. Please try again later.");
+    }
     while($row = $result->fetch_assoc()) {
     ?>
         <tr>
@@ -67,7 +71,9 @@ function displayOrderDetails($order_id) {
             WHERE Order_Product.orders_id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $order_id);
-    $stmt->execute();
+    if (!$stmt->execute()) {
+        throw new DatabaseError("Error: " . $conn->error, "We're sorry, something went wrong. Please try again later.");
+    }
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
         $subtotal = $row['quantity'] * $row['price'];
@@ -86,7 +92,12 @@ function displayOrderDetails($order_id) {
     return round($total, 2);
 }
 session_start();
-if (!isset($_SESSION["admin_loggedin"]) && $_SESSION["admin_loggedin"] !== true) {
+try {
+    if (!isset($_SESSION["admin_loggedin"]) && $_SESSION["admin_loggedin"] !== true) {
+        throw new AdminError("Please log in as an admin to access this page.");
+    }
+} catch (Exception $e) {
+    $userMessage = handleError($e);
     header("Location: login.php");
 }
 
@@ -95,28 +106,44 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"
     && isset($_POST['order_id']) && is_numeric($_POST['order_id'])
     && isset($_POST['status']) && !empty($_POST['status'])) {
     header('Content-Type: application/json');
-    $conn = connectToDatabase();
-    $order_id = $conn->real_escape_string($_POST['order_id']);
-    $status = $conn->real_escape_string($_POST['status']);
-    $sql = "UPDATE Orders SET status='$status' WHERE id='$order_id'";
-    $conn->query($sql);
-    $conn->close();
+    try {
+        $conn = connectToDatabase();
+        $stmt = $conn->prepare("UPDATE Orders SET status=? WHERE id=?");
+        $stmt->bind_param("si", $_POST['status'], $_POST['order_id']);
+        if (!$stmt->execute()) {
+            throw new DatabaseError("Error: " . $conn->error, "We're sorry, something went wrong. Please try again later.");
+        }
+        $stmt->close();
+        $conn->close();
 
-    ob_start();
-    displayTable();
-    echo json_encode(['success' => true, 'content' => ob_get_clean()]);
-    exit();
+        ob_start();
+        displayTable();
+        echo json_encode(['success' => true, 'content' => ob_get_clean()]);
+        exit();
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        exit();
+    }
 } elseif ($_SERVER["REQUEST_METHOD"] == "POST") {
     header('Content-Type: application/json');
-    echo json_encode(['success' => false, 'message' => 'Invalid request']);
-    exit();
+    try {
+        throw new InputValidationException("Invalid request", "Invalid request");
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        exit();
+    }
 }
 if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['order_id']) && is_numeric($_GET['order_id'])) {
     header('Content-Type: application/json');
-    ob_start();
-    $total = displayOrderDetails($_GET['order_id']);
-    echo json_encode(['success' => true, 'content' => ob_get_clean(), 'total' => $total]);
-    exit();
+    try {
+        ob_start();
+        $total = displayOrderDetails($_GET['order_id']);
+        echo json_encode(['success' => true, 'content' => ob_get_clean(), 'total' => $total]);
+        exit();
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        exit();
+    }
 }
 ?>
 
@@ -197,7 +224,14 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['order_id']) && is_numeri
                             </tr>
                         </thead>
                         <tbody id="ajax">
-                            <?php displayTable(); ?>
+                        <?php
+                            try {
+                                displayTable();
+                            } catch (Exception $e) {
+                                $userMessage = handleError($e);
+                                echo "<tr><td colspan='6'>$userMessage</td></tr>";
+                            }
+                        ?>
                         </tbody>
                     </table>
                 </div>

@@ -1,5 +1,6 @@
 <?php
     require_once __DIR__ . '/../core/config.php';
+    require_once __DIR__ . "/../core/error_handler.php";
     function displayCategories() {
         $conn = connectToDatabase();
         $sql = "SELECT c1.id, c1.name, c1.imagePath, c2.name as parent_name
@@ -7,6 +8,9 @@
                 LEFT JOIN Categorys cat ON c1.id = cat.sub_category_id
                 LEFT JOIN Category c2 ON cat.main_category_id = c2.id";
         $result = $conn->query($sql);
+        if (!$result) {
+            throw new DatabaseError("Error: " . $conn->error, "We're sorry, something went wrong. Please try again later.");
+        }
         $conn->close();
 
         while($row = $result->fetch_assoc()) {
@@ -49,7 +53,9 @@
                                             $conn = connectToDatabase();
                                             $stmt = $conn->prepare("SELECT id, name FROM Category WHERE id != ?");
                                             $stmt->bind_param("i", $row['id']);
-                                            $stmt->execute();
+                                            if (!$stmt->execute()) {
+                                                throw new DatabaseError("Error: " . $conn->error, "We're sorry, something went wrong. Please try again later.");
+                                            }
                                             $categoryResult = $stmt->get_result();
                                             $stmt->close();
                                             $conn->close();
@@ -72,15 +78,20 @@
                 </div>
             </div><?php
         }
-    }
+        }
 
     session_start();
-    if (!isset($_SESSION["admin_loggedin"]) && $_SESSION["admin_loggedin"] !== true) {
+    try {
+        if (!isset($_SESSION["admin_loggedin"]) && $_SESSION["admin_loggedin"] !== true) {
+            throw new AdminError("user tried to access admin page without being logged in as admin");
+        }
+    } catch (Exception $e) {
+        $userMessage = handleError($e);
         header("Location: login.php");
     }
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         header('Content-Type: application/json');
-
+        try {
         if (isset($_POST["action"]) && !empty($_POST["action"])) {
             switch($_POST["action"]) {
                 case "add":
@@ -118,15 +129,15 @@
                                 displayCategories();
                                 echo json_encode(['success' => true, 'content' => ob_get_clean()]);
                             } else {
-                                echo json_encode(['success' => false, 'error' => 'Database error']);
+                                throw new DatabaseError("Error: " . $conn->error, "We're sorry, something went wrong. Please try again later.");
                             }
                             $stmt->close();
                             $conn->close();
                         } else {
-                            echo json_encode(['success' => false, 'error' => 'Failed to upload image']);
+                            throw new UploadException("Error: There was an error uploading your file", "There was an error uploading your file");
                         }
                     } else {
-                        echo json_encode(['success' => false, 'error' => 'Missing required fields']);
+                        throw new InputValidationException("Missing required fields", "Missing required fields");
                     }
                     break;
 
@@ -162,7 +173,7 @@
                             displayCategories();
                             echo json_encode(['success' => true, 'content' => ob_get_clean()]);
                         } else {
-                            echo json_encode(['success' => false, 'error' => 'Database error']);
+                            throw new DatabaseError("Error: " . $conn->error, "We're sorry, something went wrong. Please try again later.");
                         }
                         $stmt->close();
                         $conn->close();
@@ -177,7 +188,9 @@
                         $conn = connectToDatabase();
                         $stmt = $conn->prepare("SELECT COUNT(*) as count FROM Product WHERE category_id = ?");
                         $stmt->bind_param("i", $_POST['id']);
-                        $stmt->execute();
+                        if  (!$stmt->execute()) {
+                            throw new DatabaseError("Error: " . $conn->error, "We're sorry, something went wrong. Please try again later.");
+                        }
                         $result = $stmt->get_result();
                         $row = $result->fetch_assoc();
                         $stmt->close();
@@ -190,7 +203,9 @@
                         // Check for dependent categories
                         $stmt = $conn->prepare("SELECT COUNT(*) as count FROM Categorys WHERE main_category_id = ?");
                         $stmt->bind_param("i", $_POST['id']);
-                        $stmt->execute();
+                        if (!$stmt->execute()) {
+                            throw new DatabaseError("Error: " . $conn->error, "We're sorry, something went wrong. Please try again later.");
+                        }
                         $result = $stmt->get_result();
                         $row = $result->fetch_assoc();
                         $stmt->close();
@@ -208,17 +223,20 @@
                             displayCategories($conn);
                             echo json_encode(['success' => true, 'content' => ob_get_clean()]);
                         } else {
-                            echo json_encode(['success' => false, 'error' => 'Database error']);
+                            throw new DatabaseError("Error: " . $conn->error, "We're sorry, something went wrong. Please try again later.");
                         }
                         $stmt->close();
                         $conn->close();
                     } else {
-                        echo json_encode(['success' => false, 'error' => 'Missing required fields']);
+                        throw new InputValidationException("Missing required fields", "Missing required fields");
                     }
                     break;
             }
         }
         exit;
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'error' => handleError($e)]);
+        }
     }
 ?>
 <!DOCTYPE html>
@@ -257,13 +275,18 @@
                                 <select class="form-control" id="parent_category" name="parent_category">
                                     <option value="">None (Main Category)</option>
                                     <?php
-                                        $conn = connectToDatabase();
-                                        $sql = "SELECT id, name FROM Category";
-                                        $result = $conn->query($sql);
-                                        $conn->close();
-                                        while($row = $result->fetch_assoc()) {
-                                            echo '<option value="' . htmlspecialchars($row['id']) . '">' .
-                                                htmlspecialchars($row['name']) . '</option>';
+                                        try {
+                                            $conn = connectToDatabase();
+                                            $sql = "SELECT id, name FROM Category";
+                                            $result = $conn->query($sql);
+                                            $conn->close();
+                                            while($row = $result->fetch_assoc()) {
+                                                echo '<option value="' . htmlspecialchars($row['id']) . '">' .
+                                                    htmlspecialchars($row['name']) . '</option>';
+                                            }
+                                        } catch (Exception $e) {
+                                            $userMessage = handleError($e);
+                                            echo '<div class="alert alert-danger" role="alert">' . htmlspecialchars($userMessage) . '</div>';
                                         }
                                     ?>
                                 </select>
@@ -295,7 +318,14 @@
                                 </tr>
                             </thead>
                             <tbody id="categoryList">
-                                <?php displayCategories(); ?>
+                                <?php
+                                try {
+                                    displayCategories();
+                                } catch (Exception $e) {
+                                    $userMessage = handleError($e);
+                                    echo '<div class="alert alert-danger" role="alert">' . $userMessage . '</div>';
+                                }
+                                ?>
                             </tbody>
                         </table>
                     </div>

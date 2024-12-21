@@ -1,50 +1,62 @@
 <?php
 require_once __DIR__ . '/../core/config.php';
+require_once __DIR__ . "/../core/error_handler.php";
 session_start();
-if (!isset($_SESSION["admin_loggedin"]) && $_SESSION["admin_loggedin"] !== true) {
+try {
+    if (!isset($_SESSION["admin_loggedin"]) && $_SESSION["admin_loggedin"] !== true) {
+        throw new AdminError("Please log in as an admin to access this page.");
+    }
+} catch (Exception $e) {
+    $userMessage = handleError($e);
     header("Location: login.php");
 }
 if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET["user_id"]) && is_numeric($_GET["user_id"])) {
-    $conn = connectToDatabase();
-    $userId = mysqli_real_escape_string($conn, $_GET["user_id"]);
-
-    // Get orders with product details
-    $sql = "SELECT o.*, a.street, a.street_number, a.city, a.postal_code, a.country,
-            GROUP_CONCAT(CONCAT(p.name, ' (', op.quantity, ')') SEPARATOR ', ') as products
-            FROM Orders o
-            LEFT JOIN Order_Product op ON o.id = op.orders_id
-            LEFT JOIN Product p ON op.product_id = p.id
-            LEFT JOIN Address a ON o.address_id = a.id
-            WHERE o.customer_id = ?
-            GROUP BY o.id";
-
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $userId);
-
     header('Content-Type: application/json');
-    if($stmt->execute()) {
-        $result = $stmt->get_result();
+    try {
+        $conn = connectToDatabase();
+        $userId = mysqli_real_escape_string($conn, $_GET["user_id"]);
 
-        $html = '';
-        while($row = $result->fetch_assoc()) {
-            $html .= '<tr>';
-            $html .= '<td>' . htmlspecialchars($row['id']) . '</td>';;
-            $html .= '<td>' . htmlspecialchars($row['street'] . ' ' . $row['street_number'] . ', ' .
-                     $row['postal_code'] . ' ' . $row['city'] . ', ' . $row['country']) . '</td>';
-            $html .= '<td>' . date('d/m/Y', strtotime($row['order_date'])) . '</td>';
-            $html .= '<td>' . number_format($row['total_price'], 2) . '€</td>';
-            $html .= '<td>' . htmlspecialchars($row['status']) . '</td>';
-            $html .= '<td>' . htmlspecialchars($row['products']) . '</td>';
-            $html .= '</tr>';
+        // Get orders with product details
+        $sql = "SELECT o.*, a.street, a.street_number, a.city, a.postal_code, a.country,
+                GROUP_CONCAT(CONCAT(p.name, ' (', op.quantity, ')') SEPARATOR ', ') as products
+                FROM Orders o
+                LEFT JOIN Order_Product op ON o.id = op.orders_id
+                LEFT JOIN Product p ON op.product_id = p.id
+                LEFT JOIN Address a ON o.address_id = a.id
+                WHERE o.customer_id = ?
+                GROUP BY o.id";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $userId);
+
+        if($stmt->execute()) {
+            $result = $stmt->get_result();
+
+            $html = '';
+            while($row = $result->fetch_assoc()) {
+                $html .= '<tr>';
+                $html .= '<td>' . htmlspecialchars($row['id']) . '</td>';;
+                $html .= '<td>' . htmlspecialchars($row['street'] . ' ' . $row['street_number'] . ', ' .
+                        $row['postal_code'] . ' ' . $row['city'] . ', ' . $row['country']) . '</td>';
+                $html .= '<td>' . date('d/m/Y', strtotime($row['order_date'])) . '</td>';
+                $html .= '<td>' . number_format($row['total_price'], 2) . '€</td>';
+                $html .= '<td>' . htmlspecialchars($row['status']) . '</td>';
+                $html .= '<td>' . htmlspecialchars($row['products']) . '</td>';
+                $html .= '</tr>';
+            }
+
+            echo json_encode(['success' => true, 'content' => $html]);
+        } else {
+            throw new DatabaseError("Error: " . $stmt->error, "We're sorry, something went wrong. Please try again later.");
         }
 
-        echo json_encode(['success' => true, 'content' => $html]);
-    } else {
-        echo json_encode(['success' => false, 'error' => 'Database error']);
+        $conn->close();
+        exit();
+    } catch (Exception $e) {
+        $userMessage = handleError($e);
+        echo json_encode(['success' => false, 'error' => $userMessage]);
+        exit();
     }
-
-    $conn->close();
-    exit();
 }
 ?>
 <!DOCTYPE html>
@@ -82,25 +94,32 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET["user_id"]) && is_numeric
                 </thead>
                 <tbody>
                     <?php
-                    $conn = connectToDatabase();
-                    $sql = "SELECT * FROM Customer";
-                    if($result = mysqli_query($conn, $sql)) {
-                        while($row = mysqli_fetch_array($result)) {
-                            ?>
-                            <tr>
-                                <td><?= htmlspecialchars($row['id']) ?></td>
-                                <td><?= htmlspecialchars($row['first_name']) ?></td>
-                                <td><?= htmlspecialchars($row['last_name']) ?></td>
-                                <td><?= htmlspecialchars($row['email']) ?></td>
-                                <td><?= date('d/m/Y', strtotime($row['date_of_birth'])) ?></td>
-                                <td>
-                                    <button class="btn btn-primary" onclick="viewOrders(<?php echo $row['id']; ?>)"><i class="fas fa-eye"></i> View Orders</button>
-                                </td>
-                            </tr>
-                            <?php
+                    try {
+                        $conn = connectToDatabase();
+                        $sql = "SELECT * FROM Customer";
+                        if($result = mysqli_query($conn, $sql)) {
+                            while($row = mysqli_fetch_array($result)) {
+                                ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($row['id']) ?></td>
+                                    <td><?= htmlspecialchars($row['first_name']) ?></td>
+                                    <td><?= htmlspecialchars($row['last_name']) ?></td>
+                                    <td><?= htmlspecialchars($row['email']) ?></td>
+                                    <td><?= date('d/m/Y', strtotime($row['date_of_birth'])) ?></td>
+                                    <td>
+                                        <button class="btn btn-primary" onclick="viewOrders(<?php echo $row['id']; ?>)"><i class="fas fa-eye"></i> View Orders</button>
+                                    </td>
+                                </tr>
+                                <?php
+                            }
+                        } else {
+                            throw new DatabaseError("Error: " . mysqli_error($conn), "We're sorry, something went wrong. Please try again later.");
                         }
+                        $conn->close();
+                    } catch (Exception $e) {
+                        $userMessage = handleError($e);
+                        echo "<div class='alert alert-danger'>An error occurred while fetching categories: " . $userMessage . "</div>";
                     }
-                    $conn->close();
                 ?>
                 </tbody>
             </table>
