@@ -1,4 +1,7 @@
-<?php include "core/shoppingCart-class.php"; ?>
+<?php
+require_once "core/shoppingCart-class.php";
+require_once "core/error_handler.php";
+?>
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
 <head>
@@ -24,116 +27,124 @@
             header('Location: login.php');
             exit;
         }
-        $cart = new ShoppingCart($_SESSION["id"]);
-        if ($cart->getCount() <= 0) {
-            ?>
-            <div class="text-center">
-            <h2>Shopping Cart</h2>
-            <p>There are no items in your cart. Add some items to your cart to continue.</p>
-            </div>
-            <?php
-        } else {
-            if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['address']) && isset($_POST['paymentMethod'])) { ?>
+        try {
+            $cart = new ShoppingCart($_SESSION["id"]);
+            if ($cart->getCount() <= 0) {
+                ?>
                 <div class="text-center">
-                    <h2>Thanks for ordering! Your order will be shipped soon.</h2>
-                    <?php
-                    $cart->displayCart();
-                    ?>
+                <h2>Shopping Cart</h2>
+                <p>There are no items in your cart. Add some items to your cart to continue.</p>
                 </div>
                 <?php
-                $cart->checkout($_POST['address']);
-            } elseif ($_SERVER["REQUEST_METHOD"] == "GET") {
-                ?><h2>Shopping Cart</h2><?php
-                $cart->displayCart();
-                require_once __DIR__ . '/core/config.php';
-                $conn = connectToDatabase();
-                $sql = "SELECT * FROM Address WHERE customer_id = ?";
-                $stmt = $conn->prepare($sql);
-                $stmt->bind_param("i", $_SESSION["id"]);
-                $stmt->execute();
-                $result = $stmt->get_result();
+            } else {
+                if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['address']) && isset($_POST['paymentMethod'])) { ?>
+                    <div class="text-center">
+                        <h2>Thanks for ordering! Your order will be shipped soon.</h2>
+                        <?php
+                        $cart->displayCart();
+                        ?>
+                    </div>
+                    <?php
+                    $cart->checkout($_POST['address']);
+                } elseif ($_SERVER["REQUEST_METHOD"] == "GET") {
+                    ?><h2>Shopping Cart</h2><?php
+                    $cart->displayCart();
+                    require_once __DIR__ . '/core/config.php';
+                    $conn = connectToDatabase();
+                    $sql = "SELECT * FROM Address WHERE customer_id = ?";
+                    $stmt = $conn->prepare($sql);
+                    $stmt->bind_param("i", $_SESSION["id"]);
+                    if (!$stmt->execute()) {
+                        throw new Exception("Error getting addresses");
+                    }
+                    $result = $stmt->get_result();
 
-                ?>
-                <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" class="checkout-form">
-                    <div class="mb-4">
-                        <h2 class="mb-3">Delivery Address</h2>
-                        <div id="addressList">
-                            <?php if($result->num_rows > 0) {?>
-                                <div class="form-group address-list">
-                                    <?php while($row = $result->fetch_assoc()) { ?>
-                                        <div class="form-check mb-2">
-                                            <input class="form-check-input" type="radio" name="address" id="address<?php echo $row['id']; ?>" value="<?php echo $row['id']; ?>" required>
-                                            <label class="form-check-label" for="address<?php echo $row['id']; ?>">
-                                                <?php echo $row['street'] . ' ' . $row['street_number'] . ', ' . $row['postal_code'] . ' ' . $row['city'] . ', ' . $row['country']; ?>
-                                            </label>
-                                        </div>
-                                    <?php } ?>
-                                </div>
-                            <?php } else { ?>
-                                <p class="text-warning">No addresses found. Please add an address first.</p>
-                            <?php } ?>
+                    ?>
+                    <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" class="checkout-form">
+                        <div class="mb-4">
+                            <h2 class="mb-3">Delivery Address</h2>
+                            <div id="addressList">
+                                <?php if($result->num_rows > 0) {?>
+                                    <div class="form-group address-list">
+                                        <?php while($row = $result->fetch_assoc()) { ?>
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="radio" name="address" id="address<?php echo $row['id']; ?>" value="<?php echo $row['id']; ?>" required>
+                                                <label class="form-check-label" for="address<?php echo $row['id']; ?>">
+                                                    <?php echo $row['street'] . ' ' . $row['street_number'] . ', ' . $row['postal_code'] . ' ' . $row['city'] . ', ' . $row['country']; ?>
+                                                </label>
+                                            </div>
+                                        <?php } ?>
+                                    </div>
+                                <?php } else { ?>
+                                    <p class="text-warning">No addresses found. Please add an address first.</p>
+                                <?php } ?>
+                            </div>
+
+                            <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                                <i class="fas fa-plus"></i> Add New Address
+                            </button>
                         </div>
 
-                        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addAddressModal">
-                            <i class="fas fa-plus"></i> Add New Address
-                        </button>
-                    </div>
-
-                    <div class="mb-4">
-                        <h2 class="mb-3">Payment Method</h2>
-                        <div class="form-group payment-methods">
-                            <div class="row row-cols-1 row-cols-md-2 g-3">
-                                <div class="col">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="paymentMethod" id="ideal" value="ideal" required>
-                                        <label class="form-check-label" for="ideal">iDEAL</label>
+                        <div class="mb-4">
+                            <h2 class="mb-3">Payment Method</h2>
+                            <div class="form-group payment-methods">
+                                <div class="row row-cols-1 row-cols-md-2 g-3">
+                                    <div class="col">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="paymentMethod" id="ideal" value="ideal" required>
+                                            <label class="form-check-label" for="ideal">iDEAL</label>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="paymentMethod" id="bancontact" value="bancontact">
-                                        <label class="form-check-label" for="bancontact">Bancontact</label>
+                                    <div class="col">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="paymentMethod" id="bancontact" value="bancontact">
+                                            <label class="form-check-label" for="bancontact">Bancontact</label>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="paymentMethod" id="applepay" value="applepay">
-                                        <label class="form-check-label" for="applepay">Apple Pay</label>
+                                    <div class="col">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="paymentMethod" id="applepay" value="applepay">
+                                            <label class="form-check-label" for="applepay">Apple Pay</label>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="paymentMethod" id="googlepay" value="googlepay">
-                                        <label class="form-check-label" for="googlepay">Google Pay</label>
+                                    <div class="col">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="paymentMethod" id="googlepay" value="googlepay">
+                                            <label class="form-check-label" for="googlepay">Google Pay</label>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="paymentMethod" id="maestro" value="maestro">
-                                        <label class="form-check-label" for="maestro">Maestro</label>
+                                    <div class="col">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="paymentMethod" id="maestro" value="maestro">
+                                            <label class="form-check-label" for="maestro">Maestro</label>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="paymentMethod" id="mastercard" value="mastercard">
-                                        <label class="form-check-label" for="mastercard">Mastercard</label>
+                                    <div class="col">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="paymentMethod" id="mastercard" value="mastercard">
+                                            <label class="form-check-label" for="mastercard">Mastercard</label>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="paymentMethod" id="visa" value="visa">
-                                        <label class="form-check-label" for="visa">Visa</label>
+                                    <div class="col">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="paymentMethod" id="visa" value="visa">
+                                            <label class="form-check-label" for="visa">Visa</label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <button type="submit" class="btn btn-primary">Place Order</button>
-                </form>
-                <?php
+                        <button type="submit" class="btn btn-primary">Place Order</button>
+                    </form>
+                    <?php
+                }
             }
-        } ?>
+        } catch (Exception $e) {
+            $error_message = handleError($e);
+            echo "<h2>" . $error_message . "</h2>";
+        }
+        ?>
     </div>
     <!-- Add Address Modal -->
     <div class="modal fade" id="addAddressModal" tabindex="-1" aria-labelledby="addAddressModalLabel" aria-hidden="true">

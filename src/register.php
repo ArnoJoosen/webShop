@@ -1,3 +1,7 @@
+<?php
+require_once __DIR__ . '/core/config.php';
+include "core/error_handler.php"
+?>
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
 <head>
@@ -20,73 +24,69 @@
     <!-- Main content -->
     <div class="container mt-4 ">
     <?php if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        require_once __DIR__ . '/core/config.php';
+        try {
+            $first_name = $_POST["first_name"];
+            $last_name = $_POST["last_name"];
+            $email = $_POST["email"];
+            // Validate email regex
+            // /^ = string match start of string
+            // [a-zA-Z0-9._%+-] = match any letter, number, or special character
+            // + = match one or more of the preceding token
+            // \. = match a period
+            // {2,} = match two or more of the preceding token
+            // $ = match end of string
+            $emailRegex = '/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/';
+            if (!preg_match($emailRegex, $email)) {
+                throw new InputValidationException("Invalid email format", "Invalid email format");
+            }
+            $password = $_POST["password"];
+            if (empty($password)) {
+                throw new InputValidationException("Password cannot be empty", "Password cannot be empty");
+            }
+            if (strlen($password) < 8) {
+                throw new InputValidationException("Password must be at least 8 characters long", "Password must be at least 8 characters long");
+            }
+            if (!preg_match('/\d/', $password)) {
+                throw new InputValidationException("Password must contain at least one number", "Password must contain at least one number");
+            }
+            if (!preg_match('/[A-Z]/', $password)) {
+                throw new InputValidationException("Password must contain at least one uppercase letter", "Password must contain at least one uppercase letter");
+            }
+            $date_of_birth = $_POST["date_of_birth"];
+            if (empty($date_of_birth)) {
+                throw new InputValidationException("Date of birth cannot be empty", "Date of birth cannot be empty");
+            }
+            $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
-        $first_name = $_POST["first_name"];
-        $last_name = $_POST["last_name"];
-        $email = $_POST["email"];
-        // Validate email regex
-        // /^ = string match start of string
-        // [a-zA-Z0-9._%+-] = match any letter, number, or special character
-        // + = match one or more of the preceding token
-        // \. = match a period
-        // {2,} = match two or more of the preceding token
-        // $ = match end of string
-        $emailRegex = '/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/';
-        if (!preg_match($emailRegex, $email)) {
-            echo '<div class="alert alert-danger" role="alert">Invalid email format</div>';
-            exit;
-        }
-        $password = $_POST["password"];
-        if (empty($password)) {
-            echo '<div class="alert alert-danger" role="alert">Password cannot be empty</div>';
-            exit;
-        }
-        if (strlen($password) < 8) {
-            echo '<div class="alert alert-danger" role="alert">Password must be at least 8 characters long</div>';
-            exit;
-        }
-        if (!preg_match('/\d/', $password)) {
-            echo '<div class="alert alert-danger" role="alert">Password must contain at least one number</div>';
-            exit;
-        }
-        if (!preg_match('/[A-Z]/', $password)) {
-            echo '<div class="alert alert-danger" role="alert">Password must contain at least one uppercase letter</div>';
-            exit;
-        }
-        $date_of_birth = $_POST["date_of_birth"];
-        if (empty($date_of_birth)) {
-            echo '<div class="alert alert-danger" role="alert">Date of birth cannot be empty</div>';
-            exit;
-        }
-        $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+            // Prepare and bind
+            $conn = connectToDatabase();
+            $stmt = $conn->prepare(
+                "INSERT INTO Customer (first_name, last_name, email, passwordhash, date_of_birth) VALUES (?, ?, ?, ?, ?)"
+            );
+            $stmt->bind_param(
+                "sssss",
+                $first_name,
+                $last_name,
+                $email,
+                $passwordHash,
+                $date_of_birth
+            );
 
-        // Prepare and bind
-        $conn = connectToDatabase();
-        $stmt = $conn->prepare(
-            "INSERT INTO Customer (first_name, last_name, email, passwordhash, date_of_birth) VALUES (?, ?, ?, ?, ?)"
-        );
-        $stmt->bind_param(
-            "sssss",
-            $first_name,
-            $last_name,
-            $email,
-            $passwordHash,
-            $date_of_birth
-        );
+            // Execute the statement
+            if ($stmt->execute() === true) {
+                echo '<div class="alert alert-success" role="alert">User registered successfully</div>'; // TODO change to redirect to login page after 3 seconds
+            } else {
+                throw new DatabaseError("Error: " . $stmt->error, "We're sorry, something went wrong. Please try again later.");
+            }
 
-        // Execute the statement
-        if ($stmt->execute() === true) {
-            echo '<div class="alert alert-success" role="alert">User registered successfully</div>'; // TODO change to redirect to login page after 3 seconds
-        } else {
-            echo '<div class="alert alert-danger" role="alert">Error: ' .
-                $stmt->error .
-                "</div>"; // TODO remove error message in production change to generic error message
+            // Close the statement
+            $stmt->close();
+            $conn->close();
+        } catch (Exception $e) {
+            $userMessage = handleError($e);
+            echo '<div class="alert alert-danger" role="alert">' . $userMessage . '</div>';
+            exit();
         }
-
-        // Close the statement
-        $stmt->close();
-        $conn->close();
     } else {
          ?>
         <div class="row justify-content-center">

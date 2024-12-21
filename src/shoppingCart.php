@@ -1,4 +1,7 @@
-<?php include "core/shoppingCart-class.php"; ?>
+<?php
+require_once "core/shoppingCart-class.php";
+require_once "core/error_handler.php"
+?>
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
 <head>
@@ -16,62 +19,73 @@
         <!-- Main content -->
         <div class="container mt-4">
             <?php
-            if (!isset($_SESSION["loggedin"])) {
+            try {
+                if (!isset($_SESSION["loggedin"])) {
+                    throw new UnauthorizedError("attempt to access shopping cart without logging in", "Please log in to access the shopping cart");
+                }
+            } catch (WebShopErrorHandler $e) {
+                $error_message = handleError($e);
                 header("Location: login.php");
                 exit();
             }
             // post request
-            if (
-                $_SERVER["REQUEST_METHOD"] == "POST" &&
-                isset($_POST["product_id"]) &&
-                isset($_POST["name"]) &&
-                isset($_POST["action"])
-            ) {
-                // create a new shopping cart object for the user
-                $cart = new ShoppingCart($_SESSION["id"]); ?>
-                <div class="text-center">
-                    <div id="ajax">
-                    <?php if ($_POST["action"] == "add") {
-                        $cart->addItem($_POST["product_id"]);
-                        echo "<h2>" . htmlspecialchars($_POST["name"]) . " Added to Cart</h2>";
-                    } elseif ($_POST["action"] == "remove") {
-                        $cart->removeItem($_POST["product_id"]);
-                        echo "<h2>" .
-                            htmlspecialchars($_POST["name"]) .
-                            " Removed from Cart</h2>";
-                    } elseif ($_POST["action"] == "decrement") {
-                        $cart->decrementItem($_POST["product_id"]);
-                        echo "<h2>One " .
-                            htmlspecialchars($_POST["name"]) .
-                            " Removed from Cart</h2>";
-                    } elseif ($_POST["action"] == "increment") {
-                        $cart->incrementItem($_POST["product_id"]);
-                        echo "<h2>One " .
-                            htmlspecialchars($_POST["name"]) .
-                            " Added to Cart</h2>";
-                    } ?>
-                        <?php $cart->displayCartEditor(); ?>
-                    </div>
-                    <div class="mt-4">
-                        <button class="btn btn-secondary me-2" onclick="history.back()">Back to Shopping</button>
-                        <a href="checkout.php" class="btn btn-primary <?php echo $cart->getCount() == 0 ? "disabled": ""; ?>">Order</a>
-                    </div>
-                </div>
-              <?php
-            } else {
-                // create a new shopping cart object for the user if not already created
-                $cart = new ShoppingCart($_SESSION["id"]); ?>
+            try {
+                if ($_SERVER["REQUEST_METHOD"] == "POST" &&
+                    isset($_POST["product_id"]) &&
+                    isset($_POST["name"]) &&
+                    isset($_POST["action"])
+                ) {
+                    // create a new shopping cart object for the user
+                    $cart = new ShoppingCart($_SESSION["id"]); ?>
                     <div class="text-center">
                         <div id="ajax">
-                        <h2> Shopping Cart</h2>
+                            <?php
+                            switch ($_POST["action"]) {
+                                case "add":
+                                    $cart->addItem($_POST["product_id"]);
+                                    echo "<h2>" . htmlspecialchars($_POST["name"]) . " Added to Cart</h2>";
+                                    break;
+                                case "remove":
+                                    $cart->removeItem($_POST["product_id"]);
+                                    echo "<h2>" . htmlspecialchars($_POST["name"]) . " Removed from Cart</h2>";
+                                    break;
+                                case "decrement":
+                                    $cart->decrementItem($_POST["product_id"]);
+                                    echo "<h2>One " . htmlspecialchars($_POST["name"]) . " Removed from Cart</h2>";
+                                    break;
+                                case "increment":
+                                    $cart->incrementItem($_POST["product_id"]);
+                                    echo "<h2>One " . htmlspecialchars($_POST["name"]) . " Added to Cart</h2>";
+                                    break;
+                                default:
+                                    throw new SessionException("Invalid action in shopping cart", "We're sorry, something went wrong. Please try again later.");
+                            }?>
                             <?php $cart->displayCartEditor(); ?>
                         </div>
                         <div class="mt-4">
                             <button class="btn btn-secondary me-2" onclick="history.back()">Back to Shopping</button>
-                            <a href="checkout.php" class="btn btn-primary <?php echo $cart->getCount() == 0 ? "disabled" : ""; ?>">Order</a>
+                            <a href="checkout.php" class="btn btn-primary <?php echo $cart->getCount() == 0 ? "disabled": ""; ?>">Order</a>
                         </div>
                     </div>
-              <?php
+                <?php
+                } else {
+                    // create a new shopping cart object for the user if not already created
+                    $cart = new ShoppingCart($_SESSION["id"]); ?>
+                        <div class="text-center">
+                            <div id="ajax">
+                            <h2> Shopping Cart</h2>
+                                <?php $cart->displayCartEditor(); ?>
+                            </div>
+                            <div class="mt-4">
+                                <button class="btn btn-secondary me-2" onclick="history.back()">Back to Shopping</button>
+                                <a href="checkout.php" class="btn btn-primary <?php echo $cart->getCount() == 0 ? "disabled" : ""; ?>">Order</a>
+                            </div>
+                        </div>
+                <?php
+                }
+            } catch (Exception $e) {
+                $error_message = handleError($e);
+                echo "<h2>" . $error_message . "</h2>";
             }
             ?>
         </div>

@@ -13,81 +13,83 @@
 </head>
 <body>
     <!-- Navigation -->
-    <?php include "core/pageElements/navBar.php"; ?>
+    <?php
+    include "core/pageElements/navBar.php";
+    require_once __DIR__ . '/core/config.php';
+    require_once __DIR__ . "/core/error_handler.php";
+    ?>
 
     <!-- Main content -->
 <?php if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["email"]) && isset($_POST["password"])) {
-    require_once __DIR__ . '/core/config.php';
-    $conn = connectToDatabase();
+    try {
+        $conn = connectToDatabase();
+        $email = $_POST["email"];
+        // Validate email regex to avoid unnecessary database query
+        // /^ = string match start of string
+        // [a-zA-Z0-9._%+-] = match any letter, number, or special character
+        // + = match one or more of the preceding token
+        // \. = match a period
+        // {2,} = match two or more of the preceding token
+        // $ = match end of string
+        $emailRegex = '/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/';
+        if (!preg_match($emailRegex, $email)) {
+            echo '<div class="alert alert-danger" role="alert">Invalid email format</div>';
+            exit;
+        }
 
-    $email = $_POST["email"];
-    // Validate email regex to avoid unnecessary database query
-    // /^ = string match start of string
-    // [a-zA-Z0-9._%+-] = match any letter, number, or special character
-    // + = match one or more of the preceding token
-    // \. = match a period
-    // {2,} = match two or more of the preceding token
-    // $ = match end of string
-    $emailRegex = '/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/';
-    if (!preg_match($emailRegex, $email)) {
-        echo '<div class="alert alert-danger" role="alert">Invalid email format</div>';
-        exit;
-    }
+        $password = $_POST["password"];
+        // evoide unecessary database query if password is empty or less than 8 characters
+        if (empty($password) || strlen($password) < 8) {
+            echo '<div class="alert alert-danger" role="alert">Password must be at least 8 characters long</div>';
+            echo "<p>" . strlen($password) . "</p>";
+            exit;
+        }
 
-    $password = $_POST["password"];
-    // evoide unecessary database query if password is empty or less than 8 characters
-    if (empty($password) || strlen($password) < 8) {
-        echo '<div class="alert alert-danger" role="alert">Password must be at least 8 characters long</div>';
-        echo "<p>" . strlen($password) . "</p>";
-        exit;
-    }
+        $stmt = $conn->prepare(
+            "SELECT id, first_name, last_name, email, passwordhash FROM Customer WHERE email = ?"
+        );
+        $stmt->bind_param("s", $email);
 
-    // Prepare and bind
-    $stmt = $conn->prepare(
-        "SELECT id, first_name, last_name, email, passwordhash FROM Customer WHERE email = ?"
-    );
-    $stmt->bind_param("s", $email);
+        if (!$stmt->execute()) {
+            throw new DatabaseError("Error executing statement");
+        }
+        $stmt->store_result();
 
-    // Execute the statement
-    $stmt->execute();
-    if ($stmt->errno) {
-        echo "Error executing query: " . $stmt->error;
+        // Check if email exists
+        if ($stmt->num_rows > 0) {
+            $stmt->bind_result($id, $first_name, $last_name, $email, $passwordhash);
+            $stmt->fetch();
+
+            // Verify password
+            if (password_verify($password, $passwordhash)) {
+                // Password is correct, start a new session
+                session_start();
+                $_SESSION["loggedin"] = true;
+                $_SESSION["id"] = $id;
+                $_SESSION["first_name"] = $first_name;
+                $_SESSION["last_name"] = $last_name;
+                $_SESSION["email"] = $email;
+
+                // Redirect to index page
+                header("Location: index.php");
+                //echo '<div class="alert alert-success" role="alert">User logtin successfully</div>';
+            } else {
+                // Display an error message if password is not valid
+                throw new UnauthorizedError("Invalid password", "The password or email you entered was not valid.");
+            }
+        } else {
+            // Display an error message if email doesn't exist
+            throw new UnauthorizedError("Invalid email", "The password or email you entered was not valid.");
+        }
+
+        // Close statement and connection
+        $stmt->close();
+        $conn->close();
+    } catch (WebShopErrorHandler $e) {
+        $error_message = handleError($e);
+        echo $error_message;
         exit();
     }
-
-    // Store the result
-    $stmt->store_result();
-
-    // Check if email exists
-    if ($stmt->num_rows > 0) {
-        $stmt->bind_result($id, $first_name, $last_name, $email, $passwordhash);
-        $stmt->fetch();
-
-        // Verify password
-        if (password_verify($password, $passwordhash)) {
-            // Password is correct, start a new session
-            session_start();
-            $_SESSION["loggedin"] = true;
-            $_SESSION["id"] = $id;
-            $_SESSION["first_name"] = $first_name;
-            $_SESSION["last_name"] = $last_name;
-            $_SESSION["email"] = $email;
-
-            // Redirect to index page
-            header("Location: index.php");
-            //echo '<div class="alert alert-success" role="alert">User logtin successfully</div>';
-        } else {
-            // Display an error message if password is not valid
-            echo "<div class='alert alert-danger' role='alert'>The password or email you entered was not valid.</div>";
-        }
-    } else {
-        // Display an error message if email doesn't exist
-        echo "<div class='alert alert-danger' role='alert'>The password or email you entered was not valid.</div>";
-    }
-
-    // Close statement and connection
-    $stmt->close();
-    $conn->close();
 }
 ?>
     <div class="container mt-5 login-container content">
