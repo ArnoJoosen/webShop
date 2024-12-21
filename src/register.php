@@ -59,7 +59,7 @@ require_once __DIR__ . "/core/error_handler.php"
             $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
             $conn = connectToDatabase();
-            $stmt = $conn->prepare("SELECT id FROM Customer WHERE email = ?");
+            $stmt = $conn->prepare("SELECT id FROM Customer WHERE email = ? AND deleted = 0");
             $stmt->bind_param("s", $email);
             $stmt->execute();
             $stmt->store_result();
@@ -120,6 +120,11 @@ require_once __DIR__ . "/core/error_handler.php"
                             <div id="passwordError" class="invalid-feedback"></div>
                         </div>
                         <div class="mb-3">
+                            <label for="confirm_password" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                            <div id="confirmPasswordError" class="invalid-feedback"></div>
+                        </div>
+                        <div class="mb-3">
                             <label for="date_of_birth" class="form-label">Date of Birth</label>
                             <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" required>
                         </div>
@@ -153,6 +158,11 @@ require_once __DIR__ . "/core/error_handler.php"
                         <input type="password" class="form-control" id="password" name="password" required>
                         <div id="passwordHelp" class="form-text">Password must be at least 8 characters long and contain at least one number, one uppercase letter, and one special character.</div>
                         <div id="passwordError" class="invalid-feedback"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">Confirm Password</label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                        <div id="confirmPasswordError" class="invalid-feedback"></div>
                     </div>
                     <div class="mb-3">
                         <label for="date_of_birth" class="form-label">Date of Birth</label>

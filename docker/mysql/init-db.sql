@@ -35,9 +35,10 @@ CREATE TABLE Customer (
     id INT AUTO_INCREMENT PRIMARY KEY,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    `date_of_birth` DATE,
-    passwordhash VARCHAR(100) NOT NULL
+    email VARCHAR(100) NOT NULL,
+    date_of_birth DATE,
+    passwordhash VARCHAR(100) NOT NULL,
+    deleted BOOLEAN DEFAULT 0
 );
 
 /* inserting test customer white password 'password' */
@@ -56,7 +57,7 @@ CREATE TABLE Address (
 );
 
 INSERT INTO Address (street, street_number, city, postal_code, country, customer_id)
-        VALUES ('Main Street', 123, 'New York', '10001', 'USA', (SELECT id FROM Customer WHERE email = 'test@example.com'));
+        VALUES ('test', 123, 'test', '10001', 'ts', (SELECT id FROM Customer WHERE email = 'test@example.com'));
 
 CREATE TABLE Category (
     id INT AUTO_INCREMENT PRIMARY KEY,

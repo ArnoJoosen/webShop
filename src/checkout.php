@@ -23,7 +23,7 @@ require_once "core/error_handler.php";
     <!-- Main content -->
     <div class="container mt-4">
         <?php
-        if (!isset($_SESSION['loggedin'])) {
+        if (!isset($_SESSION['loggedin']) && $_SESSION["loggedin"] !== true) {
             header('Location: login.php');
             exit;
         }

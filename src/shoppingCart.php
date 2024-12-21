@@ -20,7 +20,7 @@ require_once "core/error_handler.php"
         <div class="container mt-4">
             <?php
             try {
-                if (!isset($_SESSION["loggedin"])) {
+                if (!isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] !== true) {
                     throw new UnauthorizedError("attempt to access shopping cart without logging in", "Please log in to access the shopping cart");
                 }
             } catch (WebShopErrorHandler $e) {

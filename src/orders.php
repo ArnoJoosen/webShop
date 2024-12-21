@@ -3,7 +3,7 @@ require_once __DIR__ . '/core/config.php';
 require_once __DIR__ . "/core/error_handler.php";
 try {
     session_start();
-    if (!isset($_SESSION["loggedin"])) {
+    if (!isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] !== true) {
         throw new UnauthorizedError("attempt to access shopping cart without logging in", "Please log in to access the shopping cart");
     }
 } catch (WebShopErrorHandler $e) {

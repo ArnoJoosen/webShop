@@ -89,6 +89,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET["user_id"]) && is_numeric
                         <th>Last Name</th>
                         <th>Email</th>
                         <th>Date of Birth</th>
+                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -96,16 +97,17 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET["user_id"]) && is_numeric
                     <?php
                     try {
                         $conn = connectToDatabase();
-                        $sql = "SELECT * FROM Customer";
+                        $sql = "SELECT *, CASE WHEN deleted = 1 THEN 'Deleted' ELSE 'Active' END as status FROM Customer";
                         if($result = mysqli_query($conn, $sql)) {
                             while($row = mysqli_fetch_array($result)) {
                                 ?>
-                                <tr>
+                                <tr <?php echo $row['deleted'] ? 'class="table-danger"' : ''; ?>>
                                     <td><?= htmlspecialchars($row['id']) ?></td>
                                     <td><?= htmlspecialchars($row['first_name']) ?></td>
                                     <td><?= htmlspecialchars($row['last_name']) ?></td>
                                     <td><?= htmlspecialchars($row['email']) ?></td>
                                     <td><?= date('d/m/Y', strtotime($row['date_of_birth'])) ?></td>
+                                    <td><?= htmlspecialchars($row['status']) ?></td>
                                     <td>
                                         <button class="btn btn-primary" onclick="viewOrders(<?php echo $row['id']; ?>)"><i class="fas fa-eye"></i> View Orders</button>
                                     </td>

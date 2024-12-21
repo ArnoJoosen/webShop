@@ -1,5 +1,6 @@
 function validatePassword() {
   const password = document.getElementById("password").value;
+  const confirmPassword = document.getElementById("confirm_password").value;
 
   // Password requirements
   const minLength = 8;
@@ -20,6 +21,12 @@ function validatePassword() {
     showError("Password must contain at least one uppercase letter");
     return false;
   }
+
+  if (password !== confirmPassword) {
+    showError("Passwords do not match");
+    return false;
+  }
+
   closeError();
   return true;
 }
