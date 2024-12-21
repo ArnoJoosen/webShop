@@ -29,9 +29,7 @@
 
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
-                $imageUrl = $row["id"]
-                ? "https://picsum.photos/id/{$row["id"]}/300/200"
-                : "https://picsum.photos/300/200";
+                $imageUrl = $row["imagePath"];
 
                 // Check if category has subcategories
                 $subCatQuery = "SELECT COUNT(*) as count FROM Categorys WHERE main_category_id = {$row["id"]}";
@@ -48,7 +46,7 @@
                 <?php else: ?>
                 <a href="<?php echo $clickUrl; ?>" class="card text-decoration-none" style="width: 18rem;">
                 <?php endif; ?>
-                    <img src="<?php echo $imageUrl; ?>" class="card-img-top" alt="<?php echo htmlspecialchars($row["name"]); ?>">
+                    <img src="<?php echo $imageUrl; ?>" class="card-img-top" alt="<?php echo htmlspecialchars($row["name"]); ?>" width="286" height="150" style="object-fit: cover; object-position: top;">
                     <div class="card-body">
                         <h5 class="card-title"><?php echo htmlspecialchars($row["name"]); ?></h5>
                     </div>
