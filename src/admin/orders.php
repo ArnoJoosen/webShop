@@ -9,7 +9,7 @@ function displayTable() {
             JOIN Address ON Orders.address_id = Address.id
             where Orders.status != 'delivered';";
     $result = $conn->query($sql);
-    if ($result->num_rows == 0) {
+    if (!$result) {
         throw new DatabaseError("Error: " . $conn->error, "We're sorry, something went wrong. Please try again later.");
     }
     while($row = $result->fetch_assoc()) {
@@ -229,7 +229,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['order_id']) && is_numeri
                                 displayTable();
                             } catch (Exception $e) {
                                 $userMessage = handleError($e);
-                                echo "<tr><td colspan='6'>$userMessage</td></tr>";
+                                echo "<div class='alert alert-danger'>An error occurred while fetching categories: " . $userMessage . "</div>";
                             }
                         ?>
                         </tbody>
