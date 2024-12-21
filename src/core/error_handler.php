@@ -69,7 +69,7 @@ class OrderProcessingError extends WebShopErrorHandler {
     }
 }
 
-function logError($error_message, $log_file = __DIR__ . 'error.log') {
+function logError($error_message, $log_file = __DIR__ . '/../logs/error.log') {
     $log_message = date('Y-m-d H:i:s') . " - " . $error_message . PHP_EOL;
     error_log($log_message, 3, $log_file);
 }

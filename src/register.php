@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/core/config.php';
-include "core/error_handler.php"
+require_once __DIR__ . "/core/error_handler.php"
 ?>
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
@@ -58,6 +58,16 @@ include "core/error_handler.php"
             }
             $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
+            $conn = connectToDatabase();
+            $stmt = $conn->prepare("SELECT id FROM Customer WHERE email = ?");
+            $stmt->bind_param("s", $email);
+            $stmt->execute();
+            $stmt->store_result();
+            if ($stmt->num_rows > 0) {
+                throw new InputValidationException("Email is already registered", "This email is already in use.");
+            }
+            $stmt->close();
+
             // Prepare and bind
             $conn = connectToDatabase();
             $stmt = $conn->prepare(
@@ -85,7 +95,39 @@ include "core/error_handler.php"
         } catch (Exception $e) {
             $userMessage = handleError($e);
             echo '<div class="alert alert-danger" role="alert">' . $userMessage . '</div>';
-            exit();
+            ?>
+            <div class="row justify-content-center">
+                <div class="col-md-6 p-5 mb-4 rounded-3 border border-2">
+                    <h1>Register</h1>
+                    <!-- novalidation necessary because bootstrap already validates the form -->
+                    <form action="register.php" method="post" onsubmit="return validatePassword()">
+                        <div class="mb-3">
+                            <label for="first_name" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="last_name" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                            <div id="passwordHelp" class="form-text">Password must be at least 8 characters long and contain at least one number, one uppercase letter, and one special character.</div>
+                            <div id="passwordError" class="invalid-feedback"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="date_of_birth" class="form-label">Date of Birth</label>
+                            <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Register</button>
+                    </form>
+                </div>
+            </div>
+            <?php
         }
     } else {
          ?>

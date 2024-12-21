@@ -87,8 +87,7 @@
         $conn->close();
     } catch (WebShopErrorHandler $e) {
         $error_message = handleError($e);
-        echo $error_message;
-        exit();
+        echo "<div class='alert alert-danger' role='alert'>$error_message</div>";
     }
 }
 ?>
