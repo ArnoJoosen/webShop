@@ -157,7 +157,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"])) {
                 <h5 class="mb-0">Create New Admin</h5>
             </div>
             <div class="card-body">
-                <!-- novalidation necessary because bootstrap already validates the form -->
                 <form id="adminForm" onsubmit="submitForm(event)">
                     <div class="row mb-3">
                         <div class="col-md-6">

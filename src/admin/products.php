@@ -36,7 +36,6 @@
                             <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
                         </div>
                         <div class='modal-body'>
-                            <!-- novalidation necessary because bootstrap already validates the form -->
                             <form id="editProduct" enctype="multipart/form-data" onsubmit="return editProduct(event)">
                                 <input type='hidden' name='id' value='<?php echo htmlspecialchars($row['id']); ?>'>
                                 <div class='mb-3'>
@@ -241,7 +240,6 @@
                     <h5 class="mb-0">Add New Product</h5>
                 </div>
                 <div class="card-body">
-                    <!-- novalidation necessary because bootstrap already validates the form -->
                     <form id="addProductForm" enctype="multipart/form-data" onsubmit="return addItem(event)">
                         <div class="row mb-3">
                             <div class="col-md-6">

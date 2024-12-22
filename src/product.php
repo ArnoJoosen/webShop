@@ -159,7 +159,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
             <div class="card-body">
                 <?php if (isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true): ?>
-                <!-- novalidation necessary because bootstrap already validates the form -->
                 <form class="mb-4" method="POST" action="product.php?id=<?php echo $id; ?>">
                     <input type="hidden" name="product_id" value="<?php echo $id; ?>">
                     <div class="mb-3">

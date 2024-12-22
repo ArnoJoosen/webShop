@@ -94,7 +94,6 @@
     <div class="container mt-5 login-container content">
         <div class="p-5 mb-4 rounded-3 border border-2">
             <h2 class="mb-4">Login</h2>
-            <!-- novalidation necessary because bootstrap already validates the form -->
             <form action="login.php" method="post" onsubmit="return validateForm()">
                 <div class="mb-3">
                     <label for="email" class="form-label">Email address</label>

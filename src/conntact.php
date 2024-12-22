@@ -29,7 +29,6 @@
                 <div class="card">
                     <div class="card-body">
                         <h3 class="card-title">Send us a message</h3>
-                        <!-- novalidation necessary because bootstrap already validates the form -->
                         <form id="contactForm" action="mailto:info@webshop.com" method="post" enctype="text/plain">
                             <div class="mb-3">
                                 <label for="name" class="form-label">Name</label>

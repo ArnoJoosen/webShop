@@ -38,7 +38,6 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                            <!-- novalidation necessary because bootstrap already validates the form -->
                             <form id="editCategoryForm<?php echo htmlspecialchars($row['id']); ?>" onsubmit="return editCategory(event, <?php echo htmlspecialchars($row['id']); ?>)">
                                 <input type="hidden" name="id" value="<?php echo htmlspecialchars($row['id']); ?>">
                                 <div class="mb-3">
@@ -275,7 +274,6 @@
                     <h5 class="mb-0">Add New Category</h5>
                 </div>
                 <div class="card-body">
-                    <!-- novalidation necessary because bootstrap already validates the form -->
                     <form onsubmit="return addCategory(event)" enctype="multipart/form-data" class="mb-4">
                         <div class="row mb-3">
                             <div class="col-md-6">

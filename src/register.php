@@ -99,7 +99,6 @@ require_once __DIR__ . "/core/error_handler.php"
             <div class="row justify-content-center">
                 <div class="col-md-6 p-5 mb-4 rounded-3 border border-2">
                     <h1>Register</h1>
-                    <!-- novalidation necessary because bootstrap already validates the form -->
                     <form action="register.php" method="post" onsubmit="return validatePassword()">
                         <div class="mb-3">
                             <label for="first_name" class="form-label">First Name</label>
@@ -139,7 +138,6 @@ require_once __DIR__ . "/core/error_handler.php"
         <div class="row justify-content-center">
             <div class="col-md-6 p-5 mb-4 rounded-3 border border-2">
                 <h1>Register</h1>
-                <!-- novalidation necessary because bootstrap already validates the form -->
                 <form action="register.php" method="post" onsubmit="return validatePassword()">
                     <div class="mb-3">
                         <label for="first_name" class="form-label">First Name</label>

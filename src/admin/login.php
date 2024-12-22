@@ -53,7 +53,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"
                         <h1 class="text-center mb-0">Admin</h1>
                     </div>
                     <div class="card-body">
-                        <!-- novalidation necessary because bootstrap already validates the form -->
                         <form action="" method="post">
                             <div class="mb-3">
                                 <input type="text" class="form-control" name="username" placeholder="Username" required>
