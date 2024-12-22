@@ -4,7 +4,7 @@ function addItem(e) {
     var xhr = new XMLHttpRequest();
     var formData = new FormData(e.target);
 
-    xhr.open('POST', '/admin/products.php', true);
+    xhr.open('POST', './products.php', true);
 
     xhr.onload = function() {
         if (xhr.status === 200) {
@@ -38,7 +38,7 @@ function editProduct(e) {
     var formData = new FormData(e.target);
     formData.append('action', 'edit');
 
-    xhr.open('POST', '/admin/products.php', true);
+    xhr.open('POST', './products.php', true);
 
     xhr.onload = function() {
         if (xhr.status === 200) {
@@ -72,7 +72,7 @@ function toggleAvailability(id) {
   formData.append('action', 'toggleAvailability');
   formData.append('id', id);
 
-  xhr.open('POST', '/admin/products.php', true);
+  xhr.open('POST', './products.php', true);
 
   xhr.onload = function() {
       if (xhr.status === 200) {

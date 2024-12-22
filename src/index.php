@@ -11,7 +11,7 @@
     <script src="script/index.js"></script>
 </head>
 <body>
-    <?php include "core/pageElements/navBar.php"; ?>
+    <?php include "./core/pageElements/navBar.php"; ?>
     <!-- Main content -->
     <div class="container mt-4">
         <div class="content-wrapper">
@@ -19,7 +19,7 @@
             <hr>
             <div id="ajax">
                 <?php
-                include "core/pageElements/categoryGrid.php";
+                include "./core/pageElements/categoryGrid.php";
                 ?>
             </div>
         </div>
