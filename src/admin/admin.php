@@ -73,9 +73,23 @@
                     <div class="card-body">
                         <h5 class="card-title"><i class="fas fa-chart-line"></i> Recent Activity</h5>
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item">New order #1234 received</li>
-                            <li class="list-group-item">Product inventory updated</li>
-                            <li class="list-group-item">New user registration</li>
+                            <?php
+                            try {
+                                $conn = connectToDatabase();
+                                $orderQuery = "SELECT id, order_date FROM Orders WHERE status='pending' ORDER BY order_date DESC LIMIT 3";
+                                $orderResult = $conn->query($orderQuery);
+                                if (!$orderResult) {
+                                    throw new DatabaseError("Error: " . $conn->error, "We're sorry, something went wrong. Please try again later.");
+                                }
+                                while ($row = $orderResult->fetch_assoc()) {
+                                    echo '<li class="list-group-item">New order #' . htmlspecialchars($row['id']) . ' received on ' . htmlspecialchars($row['order_date']) . '</li>';
+                                }
+                                $conn->close();
+                            } catch (Exception $e) {
+                                $userMessage = handleError($e);
+                                echo '<li class="list-group-item">' . htmlspecialchars($userMessage) . '</li>';
+                            }
+                            ?>
                         </ul>
                     </div>
                 </div>
