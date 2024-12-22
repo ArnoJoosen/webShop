@@ -47,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"])) {
                 );
             }
             $password = password_hash($password, PASSWORD_DEFAULT);
-            $role = $_POST["superAdmin"] ? "superAdmin" : "admin";
+            $role = $_POST["superAdmin"] == "true" ? "superAdmin" : "admin";
 
             $conn = connectToDatabase();
             $stmt = $conn->prepare(
