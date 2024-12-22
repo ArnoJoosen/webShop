@@ -163,10 +163,12 @@
                         }
 
                         if($stmt->execute()) {
-                            if(isset($_POST['parent_category'])) {
+                            if(isset($_POST['parent_category']) && !empty($_POST['parent_category'])) {
                                 $stmt = $conn->prepare("REPLACE INTO Categorys (main_category_id, sub_category_id) VALUES (?, ?)");
                                 $stmt->bind_param("ii", $_POST['parent_category'], $_POST['id']);
-                                $stmt->execute();
+                                if (!$stmt->execute()) {
+                                    throw new DatabaseError("Error: " . $conn->error, "We're sorry, something went wrong. Please try again later.");
+                                }
                             }
 
                             ob_start();
