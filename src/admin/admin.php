@@ -1,6 +1,13 @@
 <?php
+    require_once __DIR__ . "/../core/error_handler.php";
+    require_once __DIR__ . '/../core/config.php';
     session_start();
-    if (!isset($_SESSION["admin_loggedin"]) && $_SESSION["admin_loggedin"] !== true) {
+    try {
+        if (!isset($_SESSION["admin_loggedin"]) && $_SESSION["admin_loggedin"] !== true) {
+            throw new AdminError("user tried to access admin page without being logged in as admin");
+        }
+    } catch (AdminError $e) {
+        handleError($e);
         header("Location: login.php");
     }
 ?>
@@ -66,9 +73,23 @@
                     <div class="card-body">
                         <h5 class="card-title"><i class="fas fa-chart-line"></i> Recent Activity</h5>
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item">New order #1234 received</li>
-                            <li class="list-group-item">Product inventory updated</li>
-                            <li class="list-group-item">New user registration</li>
+                            <?php
+                            try {
+                                $conn = connectToDatabase();
+                                $orderQuery = "SELECT id, order_date FROM Orders WHERE status='pending' ORDER BY order_date DESC LIMIT 3";
+                                $orderResult = $conn->query($orderQuery);
+                                if (!$orderResult) {
+                                    throw new DatabaseError("Error: " . $conn->error, "We're sorry, something went wrong. Please try again later.");
+                                }
+                                while ($row = $orderResult->fetch_assoc()) {
+                                    echo '<li class="list-group-item">New order #' . htmlspecialchars($row['id']) . ' received on ' . htmlspecialchars($row['order_date']) . '</li>';
+                                }
+                                $conn->close();
+                            } catch (Exception $e) {
+                                $userMessage = handleError($e);
+                                echo '<li class="list-group-item">' . htmlspecialchars($userMessage) . '</li>';
+                            }
+                            ?>
                         </ul>
                     </div>
                 </div>
@@ -79,24 +100,36 @@
                         <h5 class="card-title"><i class="fas fa-chart-bar"></i> Quick Stats</h5>
                         <ul class="list-group list-group-flush">
                             <?php
-                                require_once __DIR__ . '/../core/config.php';
-
+                            try {
                                 // Count registered users
                                 $conn = connectToDatabase();
                                 $userQuery = "SELECT COUNT(*) as count FROM Customer";
                                 $userResult = $conn->query($userQuery);
+                                if (!$userResult) {
+                                    throw new DatabaseError("Error: " . $conn->error, "We're sorry, something went wrong. Please try again later.");
+                                }
                                 $userCount = $userResult->fetch_assoc()['count'];
 
                                 // Count pending orders
                                 $orderQuery = "SELECT COUNT(*) as count FROM Orders WHERE status = 'pending'";
                                 $orderResult = $conn->query($orderQuery);
+                                if (!$orderResult) {
+                                    throw new DatabaseError("Error: " . $conn->error, "We're sorry, something went wrong. Please try again later.");
+                                }
                                 $orderCount = $orderResult->fetch_assoc()['count'];
 
                                 // Count out of stock items
                                 $stockQuery = "SELECT COUNT(*) as count FROM Product WHERE stock = 0";
                                 $stockResult = $conn->query($stockQuery);
+                                if (!$stockResult) {
+                                    throw new DatabaseError("Error: " . $conn->error, "We're sorry, something went wrong. Please try again later.");
+                                }
                                 $stockCount = $stockResult->fetch_assoc()['count'];
                                 $conn->close();
+                            } catch (Exception $e) {
+                                $userMessage = handleError($e);
+                                echo '<div class="alert alert-danger" role="alert">' . $userMessage . '</div>';
+                            }
                             ?>
                             <li class="list-group-item">Registered Users: <span class="fw-bold text-primary"><?php echo htmlspecialchars($userCount); ?></span></li>
                             <li class="list-group-item">Pending Orders: <span class="fw-bold text-primary"><?php echo htmlspecialchars($orderCount); ?></span></li>

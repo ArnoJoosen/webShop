@@ -35,9 +35,10 @@ CREATE TABLE Customer (
     id INT AUTO_INCREMENT PRIMARY KEY,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    `date_of_birth` DATE,
-    passwordhash VARCHAR(100) NOT NULL
+    email VARCHAR(100) NOT NULL,
+    date_of_birth DATE,
+    passwordhash VARCHAR(100) NOT NULL,
+    deleted BOOLEAN DEFAULT 0
 );
 
 /* inserting test customer white password 'password' */
@@ -56,7 +57,7 @@ CREATE TABLE Address (
 );
 
 INSERT INTO Address (street, street_number, city, postal_code, country, customer_id)
-        VALUES ('Main Street', 123, 'New York', '10001', 'USA', (SELECT id FROM Customer WHERE email = 'test@example.com'));
+        VALUES ('test', 123, 'test', '10001', 'ts', (SELECT id FROM Customer WHERE email = 'test@example.com'));
 
 CREATE TABLE Category (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -127,45 +128,45 @@ CREATE TABLE ShoppingCart (
 );
 
 /* Inserting data root category */
-INSERT INTO Category (name, imagePath) VALUES ('Electronics', 'electronics.jpg');
-INSERT INTO Category (name, imagePath) VALUES ('Clothing', 'clothing.jpg');
-INSERT INTO Category (name, imagePath) VALUES ('Books', 'books.jpg');
-INSERT INTO Category (name, imagePath) VALUES ('Home & Garden', 'home.jpg');
-INSERT INTO Category (name, imagePath) VALUES ('Toys', 'toys.jpg');
-INSERT INTO Category (name, imagePath) VALUES ('Sports & Outdoors', 'sports.jpg');
-INSERT INTO Category (name, imagePath) VALUES ('Health & Beauty', 'health.jpg');
-INSERT INTO Category (name, imagePath) VALUES ('Automotive', 'automotive.jpg');
+INSERT INTO Category (name, imagePath) VALUES ('Electronics', '/resources/example_categories/Electronics.jpg');
+INSERT INTO Category (name, imagePath) VALUES ('Clothing', '/resources/example_categories/Clothing.jpg');
+INSERT INTO Category (name, imagePath) VALUES ('Books', '/resources/example_categories/Books.jpg');
+INSERT INTO Category (name, imagePath) VALUES ('Home & Garden', '/resources/example_categories/Home_&_Garden.jpg');
+INSERT INTO Category (name, imagePath) VALUES ('Toys', '/resources/example_categories/Toys.jpg');
+INSERT INTO Category (name, imagePath) VALUES ('Sports & Outdoors', '/resources/example_categories/Sports_&_Outdoors.jpg');
+INSERT INTO Category (name, imagePath) VALUES ('Health & Beauty', '/resources/example_categories/Health_&_Beauty.jpg');
+INSERT INTO Category (name, imagePath) VALUES ('Automotive', '/resources/example_categories/Automotive.jpg');
 
 /* Inserting data sub category */
-INSERT INTO Category (name, imagePath) VALUES ('Laptops', 'laptops.jpg');
+INSERT INTO Category (name, imagePath) VALUES ('Laptops', '/resources/example_categories/Laptops.jpg');
 INSERT INTO Categorys (main_category_id, sub_category_id, level) VALUES ((SELECT id FROM Category WHERE name = 'Electronics'), (SELECT id FROM Category WHERE name = 'Laptops'), 1);
-INSERT INTO Category (name, imagePath) VALUES ('Smartphones', 'smartphones.jpg');
+INSERT INTO Category (name, imagePath) VALUES ('Smartphones', '/resources/example_categories/Smartphones.jpg');
 INSERT INTO Categorys (main_category_id, sub_category_id, level) VALUES ((SELECT id FROM Category WHERE name = 'Electronics'), (SELECT id FROM Category WHERE name = 'Smartphones'), 1);
-INSERT INTO Category (name, imagePath) VALUES ('Tablets', 'tablets.jpg');
+INSERT INTO Category (name, imagePath) VALUES ('Tablets', '/resources/example_categories/Tablets.jpg');
 INSERT INTO Categorys (main_category_id, sub_category_id, level) VALUES ((SELECT id FROM Category WHERE name = 'Electronics'), (SELECT id FROM Category WHERE name = 'Tablets'), 1);
-INSERT INTO Category (name, imagePath) VALUES ('Headphones', 'headphones.jpg');
+INSERT INTO Category (name, imagePath) VALUES ('Headphones', '/resources/example_categories/Headphones.jpg');
 INSERT INTO Categorys (main_category_id, sub_category_id, level) VALUES ((SELECT id FROM Category WHERE name = 'Electronics'), (SELECT id FROM Category WHERE name = 'Headphones'), 1);
-INSERT INTO Category (name, imagePath) VALUES ('T-Shirts', 'tshirts.jpg');
+INSERT INTO Category (name, imagePath) VALUES ('T-Shirts', '/resources/example_categories/T-Shirts.jpg');
 INSERT INTO Categorys (main_category_id, sub_category_id, level) VALUES ((SELECT id FROM Category WHERE name = 'Clothing'), (SELECT id FROM Category WHERE name = 'T-Shirts'), 1);
-INSERT INTO Category (name, imagePath) VALUES ('Jeans', 'jeans.jpg');
+INSERT INTO Category (name, imagePath) VALUES ('Jeans', '/resources/example_categories/Jeans.jpg');
 INSERT INTO Categorys (main_category_id, sub_category_id, level) VALUES ((SELECT id FROM Category WHERE name = 'Clothing'), (SELECT id FROM Category WHERE name = 'Jeans'), 1);
-INSERT INTO Category (name, imagePath) VALUES ('Sweaters', 'sweaters.jpg');
+INSERT INTO Category (name, imagePath) VALUES ('Sweaters', '/resources/example_categories/Sweaters.jpg');
 INSERT INTO Categorys (main_category_id, sub_category_id, level) VALUES ((SELECT id FROM Category WHERE name = 'Clothing'), (SELECT id FROM Category WHERE name = 'Sweaters'), 1);
-INSERT INTO Category (name, imagePath) VALUES ('Hoodies', 'hoodies.jpg');
+INSERT INTO Category (name, imagePath) VALUES ('Hoodies', '/resources/example_categories/Hoodies.jpg');
 INSERT INTO Categorys (main_category_id, sub_category_id, level) VALUES ((SELECT id FROM Category WHERE name = 'Clothing'), (SELECT id FROM Category WHERE name = 'Hoodies'), 1);
-INSERT INTO Category (name, imagePath) VALUES ('Fantasy', 'fantasy.jpg');
+INSERT INTO Category (name, imagePath) VALUES ('Fantasy', '/resources/example_categories/Fantasy.jpg');
 INSERT INTO Categorys (main_category_id, sub_category_id, level) VALUES ((SELECT id FROM Category WHERE name = 'Books'), (SELECT id FROM Category WHERE name = 'Fantasy'), 1);
-INSERT INTO Category (name, imagePath) VALUES ('Science Fiction', 'scifi.jpg');
+INSERT INTO Category (name, imagePath) VALUES ('Science Fiction', '/resources/example_categories/Science_Fiction.jpg');
 INSERT INTO Categorys (main_category_id, sub_category_id, level) VALUES ((SELECT id FROM Category WHERE name = 'Books'), (SELECT id FROM Category WHERE name = 'Science Fiction'), 1);
-INSERT INTO Category (name, imagePath) VALUES ('Romance', 'romance.jpg');
+INSERT INTO Category (name, imagePath) VALUES ('Romance', '/resources/example_categories/Romance.jpg');
 INSERT INTO Categorys (main_category_id, sub_category_id, level) VALUES ((SELECT id FROM Category WHERE name = 'Books'), (SELECT id FROM Category WHERE name = 'Romance'), 1);
-INSERT INTO Category (name, imagePath) VALUES ('Gardening', 'gardening.jpg');
+INSERT INTO Category (name, imagePath) VALUES ('Gardening', '/resources/example_categories/Gardening.jpg');
 INSERT INTO Categorys (main_category_id, sub_category_id, level) VALUES ((SELECT id FROM Category WHERE name = 'Home & Garden'), (SELECT id FROM Category WHERE name = 'Gardening'), 1);
 
 /* creating sub categories of sub categories */
-INSERT INTO Category (name, imagePath) VALUES ('Gaming Laptops', 'gaminglaptops.jpg');
+INSERT INTO Category (name, imagePath) VALUES ('Gaming Laptops', '/resources/example_categories/Gaming_Laptops.jpg');
 INSERT INTO Categorys (main_category_id, sub_category_id, level) VALUES ((SELECT id FROM Category WHERE name = 'Laptops'), (SELECT id FROM Category WHERE name = 'Gaming Laptops'), 2);
-INSERT INTO Category (name, imagePath) VALUES ('Business Laptops', 'businesslaptops.jpg');
+INSERT INTO Category (name, imagePath) VALUES ('Business Laptops', '/resources/example_categories/Business_Laptops.jpg');
 INSERT INTO Categorys (main_category_id, sub_category_id, level) VALUES ((SELECT id FROM Category WHERE name = 'Laptops'), (SELECT id FROM Category WHERE name = 'Business Laptops'), 2);
 
 /* Inserting data in sub categories */

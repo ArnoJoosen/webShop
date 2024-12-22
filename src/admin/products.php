@@ -1,11 +1,15 @@
 <?php
     require_once __DIR__ . '/../core/config.php';
+    require_once __DIR__ . "/../core/error_handler.php";
     // function to display products in a table
     function displayProducts() {
         $conn = connectToDatabase();
         $sql = "SELECT p.*, c.name as category_name FROM Product p
             LEFT JOIN Category c ON p.category_id = c.id";
         $result = $conn->query($sql);
+        if (!$result) {
+            throw new DatabaseError("Error: " . $conn->error, "We're sorry, something went wrong. Please try again later.");
+        }
         $conn->close();
 
         while($row = $result->fetch_assoc()) {
@@ -62,6 +66,9 @@
                                             $conn = connectToDatabase();
                                             $sql = "SELECT id, name FROM Category";
                                             $categoryResult = $conn->query($sql);
+                                            if (!$categoryResult) {
+                                                throw new DatabaseError("Error: " . $conn->error, "We're sorry, something went wrong. Please try again later.");
+                                            }
                                             $conn->close();
                                             while($category = $categoryResult->fetch_assoc()) {
                                                 echo "<option value='" . htmlspecialchars($category['id']) . "'" .
@@ -83,111 +90,128 @@
         }
     }
     session_start();
-    if (!isset($_SESSION["admin_loggedin"]) && $_SESSION["admin_loggedin"] !== true) {
+    try {
+        if (!isset($_SESSION["admin_loggedin"]) && $_SESSION["admin_loggedin"] !== true) {
+            throw new AdminError("Please log in as an admin to access this page.");
+        }
+    } catch (Exception $e) {
+        $userMessage = handleError($e);
         header("Location: login.php");
     }
 
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         header('Content-Type: application/json');
+        try {
+            if (isset($_POST["action"])) {
+                switch($_POST["action"]) {
+                    case "add":
+                        if(isset($_POST['name']) && !empty($_POST['name'])
+                            && isset($_POST['price']) && is_numeric($_POST['price'])
+                            && isset($_POST['description']) && !empty($_POST['description'])
+                            && isset($_POST['manufacturer'])  && !empty($_POST['manufacturer'])
+                            && isset($_POST['stock']) && is_numeric($_POST['stock'])
+                            && isset($_POST['category_id']) && !empty($_POST['category_id'])
+                            && isset($_FILES['image'])) {
 
-        if (isset($_POST["action"])) {
-            switch($_POST["action"]) {
-                case "add":
-                    if(isset($_POST['name']) && isset($_POST['price']) && isset($_POST['description']) &&
-                       isset($_POST['manufacturer']) && isset($_POST['stock']) && isset($_POST['category_id']) &&
-                       isset($_FILES['image'])) {
+                            $targetDir = "/uploads/products/";
+                            $fileName = basename($_FILES["image"]["name"]);
+                            $targetFilePath = $targetDir . time() . '_' . $fileName;
+                            $fileType = pathinfo($targetFilePath, PATHINFO_EXTENSION);
 
-                        $targetDir = "/uploads/products/";
-                        $fileName = basename($_FILES["image"]["name"]);
-                        $targetFilePath = $targetDir . time() . '_' . $fileName;
-                        $fileType = pathinfo($targetFilePath, PATHINFO_EXTENSION);
+                            if (!is_dir(__DIR__ . "/../" . $targetDir)) {
+                                throw new UploadException("Error: Directory does not exist", "We're sorry, something went wrong. Please try again later.");
+                            }
 
-                        if (!is_dir(__DIR__ . "/../" . $targetDir)) {
-                            echo json_encode(['success' => false, 'error' => 'Upload directory does not exist']);
-                            exit;
-                        }
+                            $allowTypes = array('jpg', 'jpeg', 'png', 'gif');
+                            if(in_array(strtolower($fileType), $allowTypes)) {
+                                if(move_uploaded_file($_FILES["image"]["tmp_name"], __DIR__ . "/../" . $targetFilePath)) {
+                                    $conn = connectToDatabase();
+                                    $stmt = $conn->prepare("INSERT INTO Product (name, description, price, manufacturer, stock, category_id, available, imagePath) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 
-                        $allowTypes = array('jpg', 'jpeg', 'png', 'gif');
-                        if(in_array(strtolower($fileType), $allowTypes)) {
-                            if(move_uploaded_file($_FILES["image"]["tmp_name"], __DIR__ . "/../" . $targetFilePath)) {
-                                $conn = connectToDatabase();
-                                $stmt = $conn->prepare("INSERT INTO Product (name, description, price, manufacturer, stock, category_id, available, imagePath) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                                    $name = $_POST['name'];
+                                    $description = $_POST['description'];
+                                    $price = $_POST['price'];
+                                    $manufacturer = $_POST['manufacturer'];
+                                    $stock = $_POST['stock'];
+                                    $category_id = $_POST['category_id'];
+                                    $available = isset($_POST['available']) ? 1 : 0;
 
-                                $name = $_POST['name'];
-                                $description = $_POST['description'];
-                                $price = $_POST['price'];
-                                $manufacturer = $_POST['manufacturer'];
-                                $stock = $_POST['stock'];
-                                $category_id = $_POST['category_id'];
-                                $available = isset($_POST['available']) ? 1 : 0;
+                                    $stmt->bind_param("ssdsiiis", $name, $description, $price, $manufacturer, $stock, $category_id, $available, $targetFilePath);
 
-                                $stmt->bind_param("ssdsiiis", $name, $description, $price, $manufacturer, $stock, $category_id, $available, $targetFilePath);
-
-                                if($stmt->execute()) {
-                                    ob_start();
-                                    displayProducts();
-                                    echo json_encode(['success' => true, 'tableContent' => ob_get_clean()]);
+                                    if($stmt->execute()) {
+                                        ob_start();
+                                        displayProducts();
+                                        echo json_encode(['success' => true, 'tableContent' => ob_get_clean()]);
+                                    } else {
+                                        throw new DatabaseError("Error: " . $stmt->error, "We're sorry, something went wrong. Please try again later.");
+                                    }
+                                    $stmt->close();
+                                    $conn->close();
                                 } else {
-                                    echo json_encode(['success' => false, 'error' => 'Database error']);
+                                    throw new UploadException("Error: Failed to upload image", "We're sorry, something went wrong. Please try again later.");
                                 }
-                                $stmt->close();
-                                $conn->close();
                             } else {
-                                echo json_encode(['success' => false, 'error' => 'Failed to upload image']);
+                                throw new UploadException("Error: Invalid file type", "We're sorry, something went wrong. Please try again later.");
                             }
                         } else {
-                            echo json_encode(['success' => false, 'error' => 'Invalid file type']);
+                            throw new InputValidationException("Missing required fields", "Missing required fields");
                         }
-                    } else {
-                        echo json_encode(['success' => false, 'error' => 'Missing required fields']);
-                    }
-                    break;
+                        break;
 
-                case "edit":
-                    if(isset($_POST['id']) && isset($_POST['name']) && isset($_POST['price']) && isset($_POST['description']) &&
-                       isset($_POST['manufacturer']) && isset($_POST['stock']) && isset($_POST['category_id'])) {
-                        $conn = connectToDatabase();
-                        $stmt = $conn->prepare("UPDATE Product SET name=?, description=?, price=?, manufacturer=?, stock=?, category_id=? WHERE id=?");
+                    case "edit":
+                        if(isset($_POST['id']) && !empty($_POST['id'])
+                            && isset($_POST['name']) && !empty($_POST['name'])
+                            && isset($_POST['price']) && is_numeric($_POST['price'])
+                            && isset($_POST['description'])  && !empty($_POST['description'])
+                            && isset($_POST['manufacturer']) && !empty($_POST['manufacturer'])
+                            && isset($_POST['stock']) && is_numeric($_POST['stock'])
+                            && isset($_POST['category_id']) && is_numeric($_POST['category_id'])) {
+                            $conn = connectToDatabase();
+                            $stmt = $conn->prepare("UPDATE Product SET name=?, description=?, price=?, manufacturer=?, stock=?, category_id=? WHERE id=?");
 
-                        $stmt->bind_param("ssdsiii", $_POST['name'], $_POST['description'], $_POST['price'],
-                                        $_POST['manufacturer'], $_POST['stock'], $_POST['category_id'], $_POST['id']);
+                            $stmt->bind_param("ssdsiii", $_POST['name'], $_POST['description'], $_POST['price'],
+                                            $_POST['manufacturer'], $_POST['stock'], $_POST['category_id'], $_POST['id']);
 
-                        if($stmt->execute()) {
-                            ob_start();
-                            displayProducts();
-                            echo json_encode(['success' => true, 'tableContent' => ob_get_clean()]);
+                            if($stmt->execute()) {
+                                ob_start();
+                                displayProducts();
+                                echo json_encode(['success' => true, 'tableContent' => ob_get_clean()]);
+                            } else {
+                                throw new DatabaseError("Error: " . $stmt->error, "We're sorry, something went wrong. Please try again later.");
+                            }
+                            $stmt->close();
+                            $conn->close();
                         } else {
-                            echo json_encode(['success' => false, 'error' => 'Database error']);
+                            throw new InputValidationException("Missing required fields", "Missing required fields");
                         }
-                        $stmt->close();
-                        $conn->close();
-                    } else {
-                        echo json_encode(['success' => false, 'error' => 'Missing required fields']);
-                    }
-                    break;
+                        break;
 
-                case "toggleAvailability":
-                    if(isset($_POST['id'])) {
-                        $conn = connectToDatabase();
-                        $stmt = $conn->prepare("UPDATE Product SET available = !available WHERE id=?");
-                        $stmt->bind_param("i", $_POST['id']);
+                    case "toggleAvailability":
+                        if(isset($_POST['id']) && is_numeric($_POST['id'])) {
+                            $conn = connectToDatabase();
+                            $stmt = $conn->prepare("UPDATE Product SET available = !available WHERE id=?");
+                            $stmt->bind_param("i", $_POST['id']);
 
-                        if($stmt->execute()) {
-                            ob_start();
-                            displayProducts($conn);
-                            echo json_encode(['success' => true, 'tableContent' => ob_get_clean()]);
+                            if($stmt->execute()) {
+                                ob_start();
+                                displayProducts($conn);
+                                echo json_encode(['success' => true, 'tableContent' => ob_get_clean()]);
+                            } else {
+                                throw new DatabaseError("Error: " . $stmt->error, "We're sorry, something went wrong. Please try again later.");
+                            }
+                            $stmt->close();
+                            $conn->close();
                         } else {
-                            echo json_encode(['success' => false, 'error' => 'Database error']);
+                            throw new InputValidationException("Missing required fields", "Missing required fields");
                         }
-                        $stmt->close();
-                        $conn->close();
-                    } else {
-                        echo json_encode(['success' => false, 'error' => 'Missing required fields']);
-                    }
-                    break;
+                        break;
+                }
             }
+            exit;
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'error' => handleError($e)]);
+            exit;
         }
-        exit;
     }
 ?>
 <!DOCTYPE html>
@@ -248,6 +272,7 @@
                                 <label for="category" class="form-label">Category</label>
                                 <select class="form-select" id="category" name="category_id" required>
                                     <?php
+                                    try {
                                         $conn = connectToDatabase();
                                         $sql = "SELECT id, name FROM Category";
                                         $result = $conn->query($sql);
@@ -255,6 +280,10 @@
                                         while($row = $result->fetch_assoc()) {
                                             echo "<option value='" . htmlspecialchars($row['id']) . "'>" . htmlspecialchars($row['name']) . "</option>";
                                         }
+                                    } catch (Exception $e) {
+                                        $userMessage = handleError($e);
+                                        echo "<div class='alert alert-danger'>An error occurred while fetching categories: " . $userMessage . "</div>";
+                                    }
                                     ?>
                                 </select>
                             </div>
@@ -298,7 +327,14 @@
                                 </tr>
                             </thead>
                             <tbody id="ajax">
-                                <?php displayProducts(); ?>
+                            <?php
+                                try {
+                                    displayProducts();
+                                } catch (Exception $e) {
+                                    $userMessage = handleError($e);
+                                    echo "<div class='alert alert-danger'>An error occurred while fetching products: " . $userMessage . "</div>";
+                                }
+                            ?>
                             </tbody>
                         </table>
                     </div>

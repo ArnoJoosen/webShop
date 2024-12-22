@@ -7,32 +7,41 @@
 </head>
 <body>
 <?php
+require_once __DIR__ . "/../core/error_handler.php";
+require_once __DIR__ . '/../core/config.php';
 session_start();
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['username']) && isset($_POST['password'])) {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
+if ($_SERVER["REQUEST_METHOD"] == "POST"
+    && isset($_POST['username']) && !empty($_POST['username'])
+    && isset($_POST['password']) && !empty($_POST['password'])) {
+    try {
+        $username = $_POST['username'];
+        $password = $_POST['password'];
 
-    require_once __DIR__ . '/../core/config.php';
+        $conn = connectToDatabase();
+        $stmt = $conn->prepare("SELECT * FROM Admins WHERE username = ?");
+        $stmt->bind_param("s", $username);
+        if (!$stmt->execute()) {
+            throw new DatabaseError("Error: " . $conn->error, "We're sorry, something went wrong. Please try again later.");
+        }
+        $result = $stmt->get_result();
+        $admin = $result->fetch_assoc();
+        $stmt->close();
+        $conn->close();
 
-    $conn = connectToDatabase();
-    $stmt = $conn->prepare("SELECT * FROM Admins WHERE username = ?");
-    $stmt->bind_param("s", $username);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $admin = $result->fetch_assoc();
-    $stmt->close();
-    $conn->close();
-
-    if ($admin && password_verify($password, $admin['passwordhash'])) {
-        $_SESSION["admin_loggedin"] = true;
-        $_SESSION["admin_username"] = $admin['username'];
-        $_SESSION['admin_id'] = $admin['id'];
-        $_SESSION['admin_role'] = $admin['role'];
-        header("Location: /admin/admin.php");
-        exit();
-    } else {
-        echo '<div class="alert alert-danger" role="alert">Invalid username or password</div>';
+        if ($admin && password_verify($password, $admin['passwordhash'])) {
+            $_SESSION["admin_loggedin"] = true;
+            $_SESSION["admin_username"] = $admin['username'];
+            $_SESSION['admin_id'] = $admin['id'];
+            $_SESSION['admin_role'] = $admin['role'];
+            header("Location: /admin/admin.php");
+            exit();
+        } else {
+            echo '<div class="alert alert-danger" role="alert">Invalid username or password</div>';
+        }
+    } catch (Exception $e) {
+        $userMessage = handleError($e);
+        echo '<div class="alert alert-danger" role="alert">' . $userMessage . '</div>';
     }
 }
 ?>

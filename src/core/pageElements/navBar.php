@@ -45,6 +45,7 @@
                                 <li><a class="dropdown-item" href="./shoppingCart.php">Shopping Card</a></li>
                                 <li><a class="dropdown-item" href="./orders.php">Orders</a></li>
                                 <li><a class="dropdown-item" href="./logout.php">Logout</a></li>
+                                <li><a class="dropdown-item" href="./deleteAccount.php">Delete Account</a></li>
                             </ul>
                         </div>
                     <?php } else { ?>

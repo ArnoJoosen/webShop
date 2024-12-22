@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . "/config.php";
+require_once __DIR__ . "/error_handler.php";
 class ShoppingCart {
     private $customID;
     private $conn;
@@ -20,7 +21,9 @@ class ShoppingCart {
             "SELECT SUM(quantity) AS total FROM ShoppingCart WHERE customer_id = ?"
         );
         $stmt->bind_param("i", $this->customID);
-        $stmt->execute();
+        if (!$stmt->execute()) {
+            throw new DatabaseError("Error: " . $stmt->error, "We're sorry, something went wrong. Please try again later.");
+        }
         $result = $stmt->get_result();
         $row = $result->fetch_assoc();
         $stmt->close();
@@ -33,10 +36,8 @@ class ShoppingCart {
             "SELECT id, quantity FROM ShoppingCart WHERE customer_id = ? AND product_id = ?"
         );
         $checkStmt->bind_param("ii", $this->customID, $itemId);
-        $checkStmt->execute();
-
-        if (!$checkStmt->execute()) {
-            die("Error: " . $checkStmt->error); // TODO change to error page (security risk)
+        if(!$checkStmt->execute()) {
+            throw new DatabaseError("Error: " . $checkStmt->error, "We're sorry, something went wrong. Please try again later.");
         }
 
         $checkResult = $checkStmt->get_result();
@@ -51,7 +52,7 @@ class ShoppingCart {
             );
             $updateStmt->bind_param("ii", $newQuantity, $row["id"]);
             if (!$updateStmt->execute()) {
-                die("Error: " . $updateStmt->error); // TODO change to error page (security risk)
+                throw new DatabaseError("Error: " . $updateStmt->error, "We're sorry, something went wrong. Please try again later.");
             }
             $updateStmt->close();
         } else {
@@ -61,7 +62,7 @@ class ShoppingCart {
             );
             $insertStmt->bind_param("ii", $this->customID, $itemId);
             if (!$insertStmt->execute()) {
-                die("Error: " . $insertStmt->error); // TODO change to error page (security risk)
+                throw new DatabaseError("Error: " . $insertStmt->error, "We're sorry, something went wrong. Please try again later.");
             }
             $insertStmt->close();
         }
@@ -73,7 +74,7 @@ class ShoppingCart {
         );
         $deleteStmt->bind_param("ii", $this->customID, $itemId);
         if (!$deleteStmt->execute()) {
-            die("Execute failed: " . $deleteStmt->error); // Debugging statement
+            throw new DatabaseError("Error: " . $deleteStmt->error, "We're sorry, something went wrong. Please try again later.");
         }
         $deleteStmt->close();
     }
@@ -84,7 +85,7 @@ class ShoppingCart {
         );
         $updateStmt->bind_param("ii", $this->customID, $itemId);
         if (!$updateStmt->execute()) {
-            die("Error: " . $updateStmt->error); // TODO change to error page (security risk)
+            throw new DatabaseError("Error: " . $updateStmt->error, "We're sorry, something went wrong. Please try again later.");
         }
         $updateStmt->close();
     }
@@ -96,7 +97,7 @@ class ShoppingCart {
         );
         $checkStmt->bind_param("ii", $this->customID, $itemId);
         if (!$checkStmt->execute()) {
-            die("Error: " . $checkStmt->error);
+           throw new DatabaseError("Error: " . $checkStmt->error, "We're sorry, something went wrong. Please try again later.");
         }
         $result = $checkStmt->get_result();
         $checkStmt->close();
@@ -112,7 +113,7 @@ class ShoppingCart {
             );
             $updateStmt->bind_param("ii", $this->customID, $itemId);
             if (!$updateStmt->execute()) {
-                die("Error: " . $updateStmt->error); // TODO change to error page (security risk)
+                throw new DatabaseError("Error: " . $updateStmt->error, "We're sorry, something went wrong. Please try again later.");
             }
             $updateStmt->close();
         }
@@ -124,7 +125,7 @@ class ShoppingCart {
         );
         $deleteStmt->bind_param("i", $this->customID);
         if (!$deleteStmt->execute()) {
-            die("Error: " . $deleteStmt->error); // TODO change to error page (security risk)
+            throw new DatabaseError("Error: " . $deleteStmt->error, "We're sorry, something went wrong. Please try again later.");
         }
         $deleteStmt->close();
     }
@@ -135,7 +136,9 @@ class ShoppingCart {
             "SELECT Product.name, Product.price, ShoppingCart.quantity, Product.id FROM ShoppingCart JOIN Product ON ShoppingCart.product_id = Product.id WHERE ShoppingCart.customer_id = ?"
         );
         $stmt->bind_param("i", $this->customID);
-        $stmt->execute();
+        if (!$stmt->execute()) {
+            throw new DatabaseError("Error: " . $stmt->error, "We're sorry, something went wrong. Please try again later.");
+        }
         $result = $stmt->get_result();
         $stmt->close();
 
@@ -188,7 +191,9 @@ class ShoppingCart {
             "SELECT Product.name, Product.price, ShoppingCart.quantity, Product.id FROM ShoppingCart JOIN Product ON ShoppingCart.product_id = Product.id WHERE ShoppingCart.customer_id = ?"
         );
         $stmt->bind_param("i", $this->customID);
-        $stmt->execute();
+        if(!$stmt->execute()) {
+            throw new DatabaseError("Error: " . $stmt->error, "We're sorry, something went wrong. Please try again later.");
+        }
         $result = $stmt->get_result();
         $stmt->close();
 
@@ -252,61 +257,57 @@ class ShoppingCart {
             "SELECT Product.name, Product.price, ShoppingCart.quantity, Product.id FROM ShoppingCart JOIN Product ON ShoppingCart.product_id = Product.id WHERE ShoppingCart.customer_id = ?"
         );
         $stmt->bind_param("i", $this->customID);
-        $stmt->execute();
+        if (!$stmt->execute()) {
+            throw new DatabaseError("Error: " . $stmt->error, "We're sorry, something went wrong. Please try again later.");
+        }
         $result = $stmt->get_result();
         $stmt->close();
 
         // create order
         $this->conn->begin_transaction();
 
-        try {
-            // Calculate total price
-            $total_price = 0;
-            while ($row = $result->fetch_assoc()) {
-                $total_price += $row["price"] * $row["quantity"];
-            }
-
-            // Insert into Orders table
-            $orderStmt = $this->conn->prepare(
-                "INSERT INTO Orders (customer_id, address_id, order_date, total_price, status) VALUES (?, ?, CURDATE(), ?, 'pending')"
-            );
-            $orderStmt->bind_param("iid", $this->customID, $address_id, $total_price);
-            if (!$orderStmt->execute()) {
-                throw new Exception("Error: " . $orderStmt->error);
-            }
-            $order_id = $orderStmt->insert_id;
-            $orderStmt->close();
-
-            // Insert into Order_Product table
-            $result->data_seek(0); // Reset result pointer
-            while ($row = $result->fetch_assoc()) {
-                $orderProductStmt = $this->conn->prepare(
-                    "INSERT INTO Order_Product (orders_id, product_id, quantity, price) VALUES (?, ?, ?, ?)"
-                );
-                $orderProductStmt->bind_param(
-                    "iiid",
-                    $order_id,
-                    $row["id"],
-                    $row["quantity"],
-                    $row["price"]
-                );
-                if (!$orderProductStmt->execute()) {
-                    throw new Exception("Error: " . $orderProductStmt->error);
-                }
-                $orderProductStmt->close();
-            }
-
-            // Empty the shopping cart
-            $this->emptyCart();
-
-            $this->conn->commit();
-
-            return $order_id;
-        } catch (Exception $e) {
-            $this->conn->rollback();
-            die($e->getMessage()); // TODO change to error page (security risk)
-            throw $e;
+        // Calculate total price
+        $total_price = 0;
+        while ($row = $result->fetch_assoc()) {
+            $total_price += $row["price"] * $row["quantity"];
         }
+
+        // Insert into Orders table
+        $orderStmt = $this->conn->prepare(
+            "INSERT INTO Orders (customer_id, address_id, order_date, total_price, status) VALUES (?, ?, CURDATE(), ?, 'pending')"
+        );
+        $orderStmt->bind_param("iid", $this->customID, $address_id, $total_price);
+        if (!$orderStmt->execute()) {
+            throw new DatabaseError("Error: " . $orderStmt->error, "We're sorry, something went wrong. Please try again later.");
+        }
+        $order_id = $orderStmt->insert_id;
+        $orderStmt->close();
+
+        // Insert into Order_Product table
+        $result->data_seek(0); // Reset result pointer
+        while ($row = $result->fetch_assoc()) {
+            $orderProductStmt = $this->conn->prepare(
+                "INSERT INTO Order_Product (orders_id, product_id, quantity, price) VALUES (?, ?, ?, ?)"
+            );
+            $orderProductStmt->bind_param(
+                "iiid",
+                $order_id,
+                $row["id"],
+                $row["quantity"],
+                $row["price"]
+            );
+            if (!$orderProductStmt->execute()) {
+                throw new DatabaseError("Error: " . $orderProductStmt->error, "We're sorry, something went wrong. Please try again later.");
+            }
+            $orderProductStmt->close();
+        }
+
+        // Empty the shopping cart
+        $this->emptyCart();
+
+        $this->conn->commit();
+
+        return $order_id;
     }
 }
 ?>

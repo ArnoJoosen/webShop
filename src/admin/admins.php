@@ -1,106 +1,136 @@
 <?php
+require_once __DIR__ . "/../core/error_handler.php";
+require_once __DIR__ . "/../core/config.php";
 session_start();
-if (
-    !isset($_SESSION["admin_loggedin"]) &&
-    $_SESSION["admin_loggedin"] !== true &&
-    $_SESSION["admin_role"] !== "superAdmin"
-) {
+try {
+    if (
+        !isset($_SESSION["admin_loggedin"]) &&
+        $_SESSION["admin_loggedin"] !== true &&
+        $_SESSION["admin_role"] !== "superAdmin"
+    ) {
+        throw new AdminError("user tried to access admin page without being logged in as admin");
+    }
+} catch (AdminError $e) {
+    logError($e);
     header("Location: login.php");
 }
-
-require_once __DIR__ . "/../core/config.php";
-
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"])) {
-    if (
-        $_POST["action"] == "add" &&
-        isset($_POST["firstName"]) &&
-        isset($_POST["lastName"]) &&
-        isset($_POST["username"]) &&
-        isset($_POST["password"]) &&
-        isset($_POST["superAdmin"])
-    ) {
-        $firstName = $_POST["firstName"];
-        $lastName = $_POST["lastName"];
-        $username = $_POST["username"];
-        $password = password_hash($password, PASSWORD_DEFAULT);
-        $role = $_POST["superAdmin"] ? "superAdmin" : "admin";
+    header('Content-Type: application/json');
+    try {
+        if ($_POST["action"] == "add" && !empty($_POST["action"]) &&
+            isset($_POST["firstName"]) && !empty($_POST["firstName"]) &&
+            isset($_POST["lastName"]) && !empty($_POST["lastName"]) &&
+            isset($_POST["username"]) && !empty($_POST["username"]) &&
+            isset($_POST["password"]) && !empty($_POST["password"]) &&
+            isset($_POST["superAdmin"]) && !empty($_POST["superAdmin"])
+        ) {
+            $firstName = $_POST["firstName"];
+            $lastName = $_POST["lastName"];
+            $username = $_POST["username"];
+            $password = $_POST["password"];
+            if (empty($password) && strlen($password) < 8) {
+                throw new InputValidationException(
+                    "Password must be at least 8 characters long",
+                    "Password must be at least 8 characters long"
+                );
+            }
+            if (!preg_match('/\d/', $password)) {
+                throw new InputValidationException(
+                    "Password must contain at least one number",
+                    "Password must contain at least one number"
+                );
+            }
+            if (!preg_match('/[A-Z]/', $password)) {
+                throw new InputValidationException(
+                    "Password must contain at least one uppercase letter",
+                    "Password must contain at least one uppercase letter"
+                );
+            }
+            $password = password_hash($password, PASSWORD_DEFAULT);
+            $role = $_POST["superAdmin"] == "true" ? "superAdmin" : "admin";
 
-        $conn = connectToDatabase();
-        $stmt = $conn->prepare(
-            "INSERT INTO Admins (first_name, last_name, username, passwordhash, role) VALUES (?, ?, ?, ?, ?)"
-        );
-        $stmt->bind_param(
-            "sssss",
-            $firstName,
-            $lastName,
-            $username,
-            $password,
-            $role
-        );
-        // Execute the statement
-        if ($stmt->execute() != true) {
-            echo '<div class="alert alert-danger" role="alert">Error: ' .
-                $stmt->error .
-                "</div>"; // TODO remove error message in production change to generic error message
-            exit();
+            $conn = connectToDatabase();
+            $stmt = $conn->prepare(
+                "INSERT INTO Admins (first_name, last_name, username, passwordhash, role) VALUES (?, ?, ?, ?, ?)"
+            );
+            $stmt->bind_param(
+                "sssss",
+                $firstName,
+                $lastName,
+                $username,
+                $password,
+                $role
+            );
+            // Execute the statement
+            if (!$stmt->execute()) {
+                throw new DatabaseError("Database error occured", "We're sorry, something went wrong. Please try again later.");
+            }
+            $stmt->close();
+            $conn->close();
+        } elseif ($_POST["action"] == "delete" && isset($_POST["id"]) && !empty($_POST["id"]) && is_numeric($_POST["id"]) && $_POST["id"] > 0) {
+            $conn = connectToDatabase();
+            $stmt = $conn->prepare("DELETE FROM Admins WHERE id = ?");
+            $stmt->bind_param("i", $_POST["id"]);
+            // Execute the statement
+            if ($stmt->execute() != true) {
+                throw new DatabaseError("Database error occured", "We're sorry, something went wrong. Please try again later.");
+            }
+            $stmt->close();
+            $conn->close();
         }
-        $stmt->close();
-        $conn->close();
-    } elseif ($_POST["action"] == "delete" && isset($_POST["id"])) {
-        $conn = connectToDatabase();
-        $stmt = $conn->prepare("DELETE FROM Admins WHERE id = ?");
-        $stmt->bind_param("i", $_POST["id"]);
-        // Execute the statement
-        if ($stmt->execute() != true) {
-            echo '<div class="alert alert-danger" role="alert">Error: ' .
-                $stmt->error .
-                "</div>"; // TODO remove error message in production change to generic error message
-            exit();
-        }
-        $stmt->close();
-        $conn->close();
-    } ?>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Username</th>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>Role</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    $conn = connectToDatabase();
-                    $sql =
-                        "SELECT * FROM Admins ORDER BY last_name, first_name";
-                    $result = $conn->query($sql);
-                    $conn->close();
+            ob_start();
+            ?>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Role</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        $conn = connectToDatabase();
+                        $sql =
+                            "SELECT * FROM Admins ORDER BY last_name, first_name";
+                        $result = $conn->query($sql);
+                        if (!$result) {
+                            throw new DatabaseError("Database error occured", "We're sorry, something went wrong. Please try again later.");
+                        }
+                        $conn->close();
 
-                    while ($row = $result->fetch_assoc()) {
-                        echo "<tr>";
-                        echo "<td>" .
-                            htmlspecialchars($row["username"]) .
-                            "</td>";
-                        echo "<td>" .
-                            htmlspecialchars($row["first_name"]) .
-                            "</td>";
-                        echo "<td>" .
-                            htmlspecialchars($row["last_name"]) .
-                            "</td>";
-                        echo "<td>" . htmlspecialchars($row["role"]) . "</td>";
-                        echo "<td>";
-                        echo "<button class='btn btn-danger btn-sm delete-admin' onclick='onDelete(" .
-                            $row["id"] .
-                            ")'><i class='fas fa-trash'></i></button>";
-                        echo "</td>";
-                        echo "</tr>";
-                    }
-                    ?>
-                </tbody>
-            </table>
-        <?php exit();
+                        while ($row = $result->fetch_assoc()) {
+                            echo "<tr>";
+                            echo "<td>" .
+                                htmlspecialchars($row["username"]) .
+                                "</td>";
+                            echo "<td>" .
+                                htmlspecialchars($row["first_name"]) .
+                                "</td>";
+                            echo "<td>" .
+                                htmlspecialchars($row["last_name"]) .
+                                "</td>";
+                            echo "<td>" . htmlspecialchars($row["role"]) . "</td>";
+                            echo "<td>";
+                            echo "<button class='btn btn-danger btn-sm delete-admin' onclick='onDelete(" .
+                                $row["id"] .
+                                ")'><i class='fas fa-trash'></i></button>";
+                            echo "</td>";
+                            echo "</tr>";
+                        }
+                        ?>
+                    </tbody>
+                </table>
+            <?php
+            echo json_encode(['success' => true, 'content' => ob_get_clean()]);
+            exit();
+    } catch (Exception $e) {
+        handleError($e);
+        echo json_encode(['success' => false, 'error' => 'An error occured']);
+        exit();
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -117,6 +147,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"])) {
 </head>
 <body>
     <?php include "pageElements/navBar.php"; ?>
+    <div id="errorBox" class="alert alert-danger alert-dismissible fade" role="alert" style="display: none;">
+        <span id="errorMessage"></span>
+    </div>
     <!-- Main content -->
     <div class="container mt-4">
                 <div class="card mb-4">
@@ -179,32 +212,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"])) {
                         </thead>
                         <tbody>
                             <?php
-                            $conn = connectToDatabase();
-                            $sql =
-                                "SELECT * FROM Admins ORDER BY last_name, first_name";
-                            $result = $conn->query($sql);
-                            $conn->close();
+                            try {
+                                $conn = connectToDatabase();
+                                $sql =
+                                    "SELECT * FROM Admins ORDER BY last_name, first_name";
+                                $result = $conn->query($sql);
+                                $conn->close();
 
-                            while ($row = $result->fetch_assoc()) {
-                                echo "<tr>";
-                                echo "<td>" .
-                                    htmlspecialchars($row["username"]) .
-                                    "</td>";
-                                echo "<td>" .
-                                    htmlspecialchars($row["first_name"]) .
-                                    "</td>";
-                                echo "<td>" .
-                                    htmlspecialchars($row["last_name"]) .
-                                    "</td>";
-                                echo "<td>" .
-                                    htmlspecialchars($row["role"]) .
-                                    "</td>";
-                                echo "<td>";
-                                echo "<button class='btn btn-danger btn-sm delete-admin' onclick='onDelete(" .
-                                    $row["id"] .
-                                    ")'><i class='fas fa-trash'></i></button>";
-                                echo "</td>";
-                                echo "</tr>";
+                                while ($row = $result->fetch_assoc()) {
+                                    echo "<tr>";
+                                    echo "<td>" .
+                                        htmlspecialchars($row["username"]) .
+                                        "</td>";
+                                    echo "<td>" .
+                                        htmlspecialchars($row["first_name"]) .
+                                        "</td>";
+                                    echo "<td>" .
+                                        htmlspecialchars($row["last_name"]) .
+                                        "</td>";
+                                    echo "<td>" .
+                                        htmlspecialchars($row["role"]) .
+                                        "</td>";
+                                    echo "<td>";
+                                    echo "<button class='btn btn-danger btn-sm delete-admin' onclick='onDelete(" .
+                                        $row["id"] .
+                                        ")'><i class='fas fa-trash'></i></button>";
+                                    echo "</td>";
+                                    echo "</tr>";
+                                }
+                            } catch (Exception $e) {
+                                    handleError($e);
+                                    echo '<div class="alert alert-danger" role="alert">We\'re sorry, something went wrong. Please try again later.</div>';
                             }
                             ?>
                         </tbody>

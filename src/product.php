@@ -1,56 +1,70 @@
 <?php
 require_once __DIR__ . '/core/config.php';
+require_once "core/error_handler.php";
 
 // Check if the request is a POST request and if it's for a review
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-    switch ($_POST["action"]) {
-        case "addReview":
-            if (isset($_POST["comment"]) && isset($_POST["rating"]) && isset($_POST["product_id"])) {
-                // Verify the user is logged in
-                session_start();
-                if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
-                    header("Location: login.php");
-                    exit;
-                }
-                // Prepare and execute the SQL query to insert the review
-                $conn = connectToDatabase();
-                $sql = "INSERT INTO Review (product_id, customer_id, rating, comment) VALUES (?, ?, ?, ?)";
-                $stmt = $conn->prepare($sql);
-                $stmt->bind_param("iiis", $_POST["product_id"], $_SESSION["id"], $_POST["rating"], $_POST["comment"]);
-                $stmt->execute();
-                $stmt->close();
-                $conn->close();
-            }
-            break;
-        case "deleteReview":
-            if (isset($_POST["review_id"])) {
-                // Verify the user is logged in
-                session_start();
-                if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
-                    header("Location: login.php");
-                    exit;
-                }
-                // check if the review belongs to the user
-                $conn = connectToDatabase();
-                $review_sql = "SELECT customer_id FROM Review WHERE id = ?";
-                $review_stmt = $conn->prepare($review_sql);
-                $review_stmt->bind_param("i", $_POST["review_id"]);
-                $review_stmt->execute();
-                $review_result = $review_stmt->get_result();
-                $review = $review_result->fetch_assoc();
-                if ($review["customer_id"] == $_SESSION["id"]) {
-                    // Prepare and execute the SQL query to delete the review
-                    $sql = "DELETE FROM Review WHERE id = ?";
+    try {
+        switch ($_POST["action"]) {
+            case "addReview":
+                if (isset($_POST["comment"]) && isset($_POST["rating"]) && isset($_POST["product_id"])) {
+                    // Verify the user is logged in
+                    session_start();
+                    if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
+                        header("Location: login.php");
+                        exit;
+                    }
+                    // Prepare and execute the SQL query to insert the review
+                    $conn = connectToDatabase();
+                    $sql = "INSERT INTO Review (product_id, customer_id, rating, comment) VALUES (?, ?, ?, ?)";
                     $stmt = $conn->prepare($sql);
-                    $stmt->bind_param("i", $_POST["review_id"]);
-                    $stmt->execute();
+                    $stmt->bind_param("iiis", $_POST["product_id"], $_SESSION["id"], $_POST["rating"], $_POST["comment"]);
+                    if (!$stmt->execute()) {
+                        throw new DatabaseError("Failed to add review", "We're sorry, something went wrong. Please try again later.");
+                    }
                     $stmt->close();
+                    $conn->close();
                 }
-                $review_stmt->close();
-                $conn->close();
-            }
-            break;
+                break;
+            case "deleteReview":
+                if (isset($_POST["review_id"])) {
+                    // Verify the user is logged in
+                    session_start();
+                    if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
+                        header("Location: login.php");
+                        exit;
+                    }
+                    // check if the review belongs to the user
+                    $conn = connectToDatabase();
+                    $review_sql = "SELECT customer_id FROM Review WHERE id = ?";
+                    $review_stmt = $conn->prepare($review_sql);
+                    $review_stmt->bind_param("i", $_POST["review_id"]);
+                    if (!$review_stmt->execute()) {
+                        throw new DatabaseError("Failed to delete review", "We're sorry, something went wrong. Please try again later.");
+                    }
+                    $review_result = $review_stmt->get_result();
+                    $review = $review_result->fetch_assoc();
+                    if ($review["customer_id"] == $_SESSION["id"]) {
+                        // Prepare and execute the SQL query to delete the review
+                        $sql = "DELETE FROM Review WHERE id = ?";
+                        $stmt = $conn->prepare($sql);
+                        $stmt->bind_param("i", $_POST["review_id"]);
+                        if (!$stmt->execute()) {
+                            throw new DatabaseError("Failed to delete review", "We're sorry, something went wrong. Please try again later.");
+                        }
+                    }
+                    $review_stmt->close();
+                    $conn->close();
+                }
+                break;
+        }
+    } catch (WebShopErrorHandler $e) {
+        if (isset($conn)) {
+            $conn->close();
+        }
+        $error_message = handleError($e);
+        echo "<div class='alert alert-danger' role='alert'>" . $error_message . "</div>";
     }
 }
 ?>
@@ -78,10 +92,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $sql = "SELECT * FROM Product WHERE id = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("i", $id);
-            $stmt->execute();
+            if (!$stmt->execute()) {
+                throw new DatabaseError("Failed to get product", "We're sorry, something went wrong. Please try again later.");
+            }
             $result = $stmt->get_result();
             $product = $result->fetch_assoc();
-            $stmt->close();
 
             if (!$product) {
                 header("Location: products.php");
@@ -94,7 +109,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                           WHERE r.product_id = ?";
             $review_stmt = $conn->prepare($review_sql);
             $review_stmt->bind_param("i", $id);
-            $review_stmt->execute();
+            if (!$review_stmt->execute()) {
+                throw new DatabaseError("Failed to get reviews", "We're sorry, something went wrong. Please try again later.");
+            }
             $reviews = $review_stmt->get_result();
             $review_stmt->close();
             $conn->close();
@@ -120,9 +137,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </div>
 
                         <?php if ($product["available"] && $product["stock"] > 0): ?>
-                        <button class="btn btn-primary btn-lg">
-                            Add to Cart
-                        </button>
+                        <form method="post" action="shoppingCart.php">
+                            <input type="hidden" name="action" value="add">
+                            <input type="hidden" name="product_id" value="<?php echo htmlspecialchars($product["id"]); ?>">
+                            <input type="hidden" name="name" value="<?php echo htmlspecialchars($product["name"]); ?>">
+                            <button type="submit" class="btn btn-primary btn-lg">Add to Cart</button>
+                        </form>
                         <?php else: ?>
                         <button class="btn btn-secondary btn-lg" disabled>
                             Out of Stock

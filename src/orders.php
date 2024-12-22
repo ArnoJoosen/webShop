@@ -1,7 +1,13 @@
 <?php
 require_once __DIR__ . '/core/config.php';
-session_start();
-if (!isset($_SESSION["loggedin"])) {
+require_once __DIR__ . "/core/error_handler.php";
+try {
+    session_start();
+    if (!isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] !== true) {
+        throw new UnauthorizedError("attempt to access shopping cart without logging in", "Please log in to access the shopping cart");
+    }
+} catch (WebShopErrorHandler $e) {
+    $error_message = handleError($e);
     header("Location: login.php");
     exit();
 }
@@ -13,9 +19,13 @@ function displayOrderDetails($order_id) {
     $verify_sql = "SELECT customer_id FROM Orders WHERE id = ?";
     $verify_stmt = $conn->prepare($verify_sql);
     $verify_stmt->bind_param("i", $order_id);
-    $verify_stmt->execute();
+    if (!$verify_stmt->execute()) {
+        $conn->close();
+        throw new DateError("Failed to verify order ownership", "Your order could not be verified");
+    }
     $verify_result = $verify_stmt->get_result();
     $order_data = $verify_result->fetch_assoc();
+    $verify_stmt->close();
 
     // If the order does not belong to the logged in customer, exit
     if (!$order_data || $order_data['customer_id'] != $_SESSION['id']) {
@@ -29,7 +39,10 @@ function displayOrderDetails($order_id) {
             WHERE Order_Product.orders_id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $order_id);
-    $stmt->execute();
+    if (!$stmt->execute()) {
+        $conn->close();
+        throw new DateError("Failed to retrieve order details", "Your order details could not be retrieved");
+    }
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
         $subtotal = $row['quantity'] * $row['price'];
@@ -44,16 +57,22 @@ function displayOrderDetails($order_id) {
         <?php
     }
     $stmt->close();
-    $verify_stmt->close();
     $conn->close();
     return round($total, 2);
 }
 if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['order_id'])) {
-    header('Content-Type: application/json');
-    ob_start();
-    $total = displayOrderDetails($_GET['order_id']);
-    echo json_encode(['success' => true, 'content' => ob_get_clean(), 'total' => $total]);
-    exit();
+    try {
+        header('Content-Type: application/json');
+        ob_start();
+        $total = displayOrderDetails($_GET['order_id']);
+        echo json_encode(['success' => true, 'content' => ob_get_clean(), 'total' => $total]);
+        exit();
+    } catch (WebShopErrorHandler $e) {
+        header('Content-Type: application/json');
+        $error_message = handleError($e);
+        echo json_encode(['success' => false, 'message' => $error_message]);
+        exit();
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -137,6 +156,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['order_id'])) {
                         </thead>
                         <tbody>
                             <?php
+                            try {
                             $conn = connectToDatabase();
                             $stmt = $conn->prepare("SELECT Orders.*, Customer.first_name, Customer.last_name, Address.street, Address.street_number, Address.city, Address.postal_code, Address.country
                                     FROM Orders
@@ -144,8 +164,12 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['order_id'])) {
                                     JOIN Address ON Orders.address_id = Address.id
                                     WHERE Customer.id = ?");
                             $stmt->bind_param("i", $_SESSION['id']);
-                            $stmt->execute();
+                            if (!$stmt->execute()) {
+                                $conn->close();
+                                throw new DateError("Failed to retrieve orders", "Your orders could not be retrieved");
+                            }
                             $result = $stmt->get_result();
+                            $stmt->close();
                             while($row = $result->fetch_assoc()) {
                                 ?>
                                     <tr>
@@ -164,7 +188,11 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['order_id'])) {
                                     </tr>
                                 <?php
                             }
-                            $conn->close();?>
+                            $conn->close();
+                            } catch (WebShopErrorHandler $e) {
+                                $error_message = handleError($e);
+                                echo "<h2>" . $error_message . "</h2>";
+                            }?>
                         </tbody>
                     </table>
                 </div>
