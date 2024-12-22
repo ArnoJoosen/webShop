@@ -1,8 +1,8 @@
+CREATE DATABASE IF NOT EXISTS webshop;
 CREATE USER 'webuser'@'%' IDENTIFIED BY 'webpassword';
 GRANT SELECT, INSERT, UPDATE, DELETE ON webshop.* TO 'webuser'@'%';
 FLUSH PRIVILEGES;
 
-CREATE DATABASE IF NOT EXISTS webshop;
 USE webshop;
 
 /* Drop all tables in webshop databace */
