@@ -6,7 +6,7 @@ This is a simple web shop project. It is a school project for the subject Web pr
 ## Installation
 ### Installation docker
 1. Clone the repository
-2. **check if thare is a folder named logs in the src folder. If not create one.**
+2. check if thare is a folder named **logs** in the src folder. If not create one.
 3. Run the following command in the root of the project:
 ```
 docker-compose up --build -d
@@ -22,13 +22,13 @@ docker-compose down
 1. Clone the repository
 2. Install a web server (for example apache)
 3. Install a database server (for example mysql)
-4. Create a database and import the sql file from the docker/mysql/init-db.sql
-5. Change the database connection in the src/config.php file
+4. Create a database and import the sql file from the db-setup.sql file
+5. Change the database connection in the src/config.php file to the correct values
 6. copy the src folder to the web server
-7. **check if thare is a folder named logs in the src folder. If not create one.**
-8. **check if thare is a folder named uploads in the src folder. If not create one.**
-9. **check if thare is a folder named products in the src/uploads folder. If not create one.**
-10. **check if thare is a folder named categories in the src/uploads folder. If not create one.**
+7. check if thare is a folder named **logs** in the src folder. If not create one.
+8. check if thare is a folder named **uploads** in the src folder. If not create one.
+9. check if thare is a folder named **products** in the src/uploads folder. If not create one.**
+10. check if thare is a folder named **categories** in the src/uploads folder. If not create one.
 
 ## Usage
 The project is a simple web shop. You can register, login, add products to the cart and buy them.

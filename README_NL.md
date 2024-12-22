@@ -6,7 +6,7 @@ Dit is een eenvoudig webshop-project. Het is een schoolproject voor het vak Webp
 ## Installatie
 ### Installatie met Docker
 1. Maak een clone van de repository
-2. **Controleer of er een map genaamd `logs` in de `src` map aanwezig is. Zo niet, maak er dan een aan.**
+2. Controleer of er een map genaamd **logs** in de `src` map aanwezig is. Zo niet, maak er dan een aan.
 3. Voer de volgende commando uit in de hoofdmap van het project:
 ```
 docker-compose up --build -d
@@ -22,13 +22,13 @@ docker-compose down
 1. Maak een clone van de repository
 2. Installeer een webserver (bijvoorbeeld Apache)
 3. Installeer een database server (bijvoorbeeld MySQL)
-4. Maak een database aan en importeer het SQL-bestand uit de `docker/mysql/init-db.sql`
+4. Maak een database aan en importeer het SQL-bestand uit de `db-setup.sql`
 5. Wijzig de databaseverbinding in het bestand `src/config.php`
-6. Kopieer de `src` map naar de webserver
-7. **Controleer of er een map genaamd `logs` in de `src` map aanwezig is. Zo niet, maak er dan een aan.**
-8. **Controleer of er een map genaamd `uploads` in de `src` map aanwezig is. Zo niet, maak er dan een aan.**
-9. **Controleer of er een map genaamd `products` in de `src/uploads` map aanwezig is. Zo niet, maak er dan een aan.**
-10. **Controleer of er een map genaamd `categories` in de `src/uploads` map aanwezig is. Zo niet, maak er dan een aan.**
+6. Kopieer de **src** map naar de webserver
+7. Controleer of er een map genaamd **logs** in de `src` map aanwezig is. Zo niet, maak er dan een aan.
+8. Controleer of er een map genaamd **uploads** in de `src` map aanwezig is. Zo niet, maak er dan een aan.
+9. Controleer of er een map genaamd **products** in de `src/uploads` map aanwezig is. Zo niet, maak er dan een aan.
+10. Controleer of er een map genaamd **categories** in de `src/uploads` map aanwezig is. Zo niet, maak er dan een aan.
 
 ## Gebruik
 Het project is een eenvoudige webshop. Je kunt je registreren, inloggen, producten aan je winkelwagentje toevoegen en ze kopen.
