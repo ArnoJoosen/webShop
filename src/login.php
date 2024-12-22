@@ -46,7 +46,7 @@
         }
 
         $stmt = $conn->prepare(
-            "SELECT id, first_name, last_name, email, passwordhash FROM Customer WHERE email = ?"
+            "SELECT id, first_name, last_name, email, passwordhash FROM Customer WHERE email = ? AND deleted = 0"
         );
         $stmt->bind_param("s", $email);
 
