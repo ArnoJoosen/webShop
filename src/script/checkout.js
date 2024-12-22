@@ -1,7 +1,7 @@
 function addAddress(e) {
     e.preventDefault();
     const formData = new FormData(e.target);
-    fetch('/ajax/addAddress.php', {
+    fetch('./ajax/addAddress.php', {
         method: 'POST',
         body: formData
     })

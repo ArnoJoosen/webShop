@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/core/config.php';
-require_once "core/error_handler.php";
+require_once __DIR__ . "/core/error_handler.php";
 
 // Check if the request is a POST request and if it's for a review
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -120,7 +120,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="card mb-4">
             <div class="row g-0">
                 <div class="col-md-6 product-image-container">
-                    <img src="<?php echo htmlspecialchars($product["imagePath"]); ?>" class="img-fluid rounded-start" alt="<?php echo htmlspecialchars($product["name"]); ?>">
+                    <img src="./<?php echo htmlspecialchars($product["imagePath"]); ?>" class="img-fluid rounded-start" alt="<?php echo htmlspecialchars($product["name"]); ?>">
                 </div>
                 <div class="col-md-6">
                     <div class="card-body">

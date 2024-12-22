@@ -1,5 +1,5 @@
 function showOrderDetails(orderId) {
-  fetch('orders.php?order_id=' + orderId)
+  fetch('./orders.php?order_id=' + orderId)
     .then(response => response.json())
     .then(data => {
       if(data.success) {

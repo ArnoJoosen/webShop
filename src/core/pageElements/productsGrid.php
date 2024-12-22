@@ -68,8 +68,8 @@ try {
     if ($result && $result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {
             ?>
-            <div class="card" style="width: 18rem;" onclick="window.location.href='/product.php?id=<?php echo htmlspecialchars($row["id"]); ?>'" style="cursor: pointer;">
-                <img src="<?php echo $row["imagePath"]; ?>" class="card-img-top" alt="<?php echo htmlspecialchars($row["name"]); ?>" width="286" height="150" style="object-fit: cover; object-position: top;">
+            <div class="card" style="width: 18rem;" onclick="window.location.href='./product.php?id=<?php echo htmlspecialchars($row["id"]); ?>'" style="cursor: pointer;">
+                <img src="./<?php echo $row["imagePath"]; ?>" class="card-img-top" alt="<?php echo htmlspecialchars($row["name"]); ?>" width="286" height="150" style="object-fit: cover; object-position: top;">
                 <div class="card-body">
                     <h5 class="card-title"><?php echo htmlspecialchars($row["name"]); ?></h5>
                     <p class="card-text"><?php echo htmlspecialchars($row["description"]); ?></p>

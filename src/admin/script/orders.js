@@ -1,7 +1,7 @@
 function changeStatus(e, id) {
   e.preventDefault();
   var formData = new FormData(e.target);
-  fetch('orders.php', {
+  fetch('./orders.php', {
       method: 'POST',
       body: formData
   })
@@ -19,7 +19,7 @@ function changeStatus(e, id) {
 }
 
 function showOrderDetails(orderId) {
-  fetch('orders.php?order_id=' + orderId)
+  fetch('./orders.php?order_id=' + orderId)
     .then(response => response.json())
     .then(data => {
       if(data.success) {

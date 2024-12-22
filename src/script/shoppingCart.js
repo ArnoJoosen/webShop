@@ -9,7 +9,7 @@ function onDecrementClick(id, name) {
   formData.append("action", "decrement");
   formData.append("name", name);
   xhr.onreadystatechange = showResult;
-  xhr.open("POST", "ajax/shoppingCart.php", true);
+  xhr.open("POST", "./ajax/shoppingCart.php", true);
   xhr.send(formData);
 }
 
@@ -24,7 +24,7 @@ function onIncrementClick(id, name) {
   formData.append("action", "increment");
   formData.append("name", name);
   xhr.onreadystatechange = showResult;
-  xhr.open("POST", "ajax/shoppingCart.php", true);
+  xhr.open("POST", "./ajax/shoppingCart.php", true);
   xhr.send(formData);
 }
 
