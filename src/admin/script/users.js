@@ -1,5 +1,5 @@
 function viewOrders(userId) {
-  fetch('users.php?user_id=' + userId)
+  fetch('./users.php?user_id=' + userId)
     .then(response => response.json())
     .then(data => {
       if(data.success) {

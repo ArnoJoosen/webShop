@@ -34,7 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"
             $_SESSION["admin_username"] = $admin['username'];
             $_SESSION['admin_id'] = $admin['id'];
             $_SESSION['admin_role'] = $admin['role'];
-            header("Location: /admin/admin.php");
+            header("Location: ./admin.php");
             exit();
         } else {
             echo '<div class="alert alert-danger" role="alert">Invalid username or password</div>';

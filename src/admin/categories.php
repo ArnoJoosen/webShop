@@ -17,7 +17,7 @@
             ?><tr>
                 <td><?php echo htmlspecialchars($row['id']); ?></td>
                 <td><?php echo htmlspecialchars($row['name']); ?></td>
-                <td><img src="<?php echo htmlspecialchars($row['imagePath']); ?>" alt="Category Image" style="max-width: 50px;"></td>
+                <td><img src="../<?php echo htmlspecialchars($row['imagePath']); ?>" alt="Category Image" style="max-width: 50px;"></td>
                 <td><?php echo ($row['parent_name'] ? htmlspecialchars($row['parent_name']) : 'None'); ?></td>
                 <td>
                     <button type="button" class="btn btn-sm btn-primary me-2" data-bs-toggle="modal" data-bs-target="#editModal<?php echo htmlspecialchars($row['id']); ?>">

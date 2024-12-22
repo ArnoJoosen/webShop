@@ -40,7 +40,7 @@ function submitForm(event) {
   }
 
   xhr.onreadystatechange = showResult;
-  xhr.open("POST", "admins.php", true);
+  xhr.open("POST", "./admins.php", true);
   xhr.send(formData);
 
   // Clear form
@@ -61,7 +61,7 @@ function onDelete(id) {
   formData.append("action", "delete");
   formData.append("id", id);
   xhr.onreadystatechange = showResult;
-  xhr.open("POST", "admins.php", true);
+  xhr.open("POST", "./admins.php", true);
   xhr.send(formData);
 }
 

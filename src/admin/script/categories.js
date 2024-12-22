@@ -3,7 +3,7 @@
      var formData = new FormData(e.target);
      formData.append('action', 'add');
 
-     fetch('categories.php', {
+     fetch('./categories.php', {
          method: 'POST',
          body: formData
      })
@@ -25,7 +25,7 @@
      var formData = new FormData(e.target);
      formData.append('action', 'edit');
 
-     fetch('categories.php', {
+     fetch('./categories.php', {
          method: 'POST',
          body: formData
      })
@@ -49,7 +49,7 @@
      formData.append('action', 'delete');
      formData.append('id', id);
 
-     fetch('categories.php', {
+     fetch('./categories.php', {
          method: 'POST',
          body: formData
      })

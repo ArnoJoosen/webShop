@@ -15,7 +15,7 @@
         while($row = $result->fetch_assoc()) {
             ?><tr>
                 <td><?php echo htmlspecialchars($row['id']); ?></td>
-                <td><img src='<?php echo htmlspecialchars($row['imagePath']); ?>' alt='<?php echo htmlspecialchars($row['name']); ?>' style='width: 50px;'></td>
+                <td><img src='../<?php echo htmlspecialchars($row['imagePath']); ?>' alt='<?php echo htmlspecialchars($row['name']); ?>' style='width: 50px;'></td>
                 <td><?php echo htmlspecialchars($row['name']); ?></td>
                 <td><?php echo htmlspecialchars(number_format($row['price'], 2)); ?>€</td>
                 <td><?php echo htmlspecialchars($row['stock']); ?></td>

@@ -1,5 +1,5 @@
 function onCategoryClick(url) {
-  var ajaxUrl = "ajax/categorys.php" + url;
+  var ajaxUrl = "./ajax/categorys.php" + url;
   xhr = new XMLHttpRequest();
   if (xhr == null) {
     alert("Your browser does not support XMLHTTP!");

@@ -5,7 +5,7 @@ function onSearch() {
     alert("Your browser does not support XMLHTTP!");
     return;
   }
-  var url = "ajax/products.php?search=" + search;
+  var url = "./ajax/products.php?search=" + search;
   xhr.onreadystatechange = showResult;
   xhr.open("GET", url, true);
   xhr.send();
