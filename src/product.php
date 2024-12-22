@@ -45,7 +45,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     }
                     $review_result = $review_stmt->get_result();
                     $review = $review_result->fetch_assoc();
-                    $review_stmt->close();
                     if ($review["customer_id"] == $_SESSION["id"]) {
                         // Prepare and execute the SQL query to delete the review
                         $sql = "DELETE FROM Review WHERE id = ?";
