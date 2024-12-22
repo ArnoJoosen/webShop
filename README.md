@@ -6,15 +6,15 @@ This is a simple web shop project. It is a school project for the subject Web pr
 ## Installation
 ### Installation docker
 1. Clone the repository
-3. check if thare is a folder named logs in the src folder. If not create one.
-2. Run the following command in the root of the project:
+2. **check if thare is a folder named logs in the src folder. If not create one.**
+3. Run the following command in the root of the project:
 ```
 docker-compose up --build -d
 ```
-3. Open the browser and go to [http://localhost:8080](http://localhost:8080) to see the project (to see phpmyadmin go to [http://localhost:8081](http://localhost:8081))
-4. The project is now running
+4. Open the browser and go to [http://localhost:8080](http://localhost:8080) to see the project (to see phpmyadmin go to [http://localhost:8081](http://localhost:8081))
+5. The project is now running
   (To debug the project you can use xdebug in vscode.)
-5. To stop the project run the following command in the root of the project:
+6. To stop the project run the following command in the root of the project:
 ```
 docker-compose down
 ```
@@ -25,10 +25,10 @@ docker-compose down
 4. Create a database and import the sql file from the docker/mysql/init-db.sql
 5. Change the database connection in the src/config.php file
 6. copy the src folder to the web server
-7. check if thare is a folder named logs in the src folder. If not create one.
-8. check if thare is a folder named uploads in the src folder. If not create one.
-9. check if thare is a folder named products in the src/uploads folder. If not create one.
-10. check if thare is a folder named categories in the src/uploads folder. If not create one.
+7. **check if thare is a folder named logs in the src folder. If not create one.**
+8. **check if thare is a folder named uploads in the src folder. If not create one.**
+9. **check if thare is a folder named products in the src/uploads folder. If not create one.**
+10. **check if thare is a folder named categories in the src/uploads folder. If not create one.**
 
 ## Usage
 The project is a simple web shop. You can register, login, add products to the cart and buy them.
