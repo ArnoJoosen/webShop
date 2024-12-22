@@ -96,7 +96,7 @@
             switch($_POST["action"]) {
                 case "add":
                     if(isset($_POST['name']) && isset($_FILES['image'])
-                            && isset($_POST['parent_category']) && is_numeric($_POST['parent_category'])
+                            && isset($_POST['parent_category'])
                             && isset($_POST['name']) && !empty($_POST['name'])) {
 
                         $targetDir = "/uploads/categories/";
@@ -144,7 +144,7 @@
                 case "edit":
                     if(isset($_POST['id']) && is_numeric($_POST['id'])
                             && isset($_POST['name']) && !empty($_POST['name'])
-                            && isset($_POST['parent_category']) && is_numeric($_POST['parent_category'])) {
+                            && isset($_POST['parent_category'])) {
                         $updateImage = isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK;
 
                         if($updateImage) {
@@ -215,6 +215,15 @@
                             exit;
                         }
 
+                        // Delete category from Categorys table
+                        $stmt = $conn->prepare("DELETE FROM Categorys WHERE sub_category_id = ?");
+                        $stmt->bind_param("i", $_POST['id']);
+                        if (!$stmt->execute()) {
+                            throw new DatabaseError("Error: " . $conn->error, "We're sorry, something went wrong. Please try again later.");
+                        }
+                        $stmt->close();
+
+                        // Delete category from category table
                         $stmt = $conn->prepare("DELETE FROM Category WHERE id = ?");
                         $stmt->bind_param("i", $_POST['id']);
 
@@ -236,6 +245,7 @@
         exit;
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'error' => handleError($e)]);
+            exit();
         }
     }
 ?>
