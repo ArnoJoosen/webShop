@@ -138,9 +138,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </div>
 
                         <?php if ($product["available"] && $product["stock"] > 0): ?>
-                        <button class="btn btn-primary btn-lg">
-                            Add to Cart
-                        </button>
+                        <form method="post" action="shoppingCart.php">
+                            <input type="hidden" name="action" value="add">
+                            <input type="hidden" name="product_id" value="<?php echo htmlspecialchars($product["id"]); ?>">
+                            <input type="hidden" name="name" value="<?php echo htmlspecialchars($product["name"]); ?>">
+                            <button type="submit" class="btn btn-primary btn-lg">Add to Cart</button>
+                        </form>
                         <?php else: ?>
                         <button class="btn btn-secondary btn-lg" disabled>
                             Out of Stock
